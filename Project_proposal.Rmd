@@ -23,7 +23,7 @@ Corresponding labels datasets:
 **Number Volcanoes** : The number of volcanoes in the image  
 
 
-## Data Import:
+## Data Import 1:
 Data downloaded from Kaggle were csv files, there are four data files in total. The four data files were imported into R : "train_images", "train_labels", "test_images", and "test_labels". Dimensions of the four data files are as follows:  
 train_images : 7000 observations and 12100 variables  
 train_labels : 7000 observations and 4 variables  
