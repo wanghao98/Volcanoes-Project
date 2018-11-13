@@ -12,18 +12,23 @@ output:
 
 ## Dataset Description:
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. 9734 images were captured by the spacecraft and converted to pixel (110x110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
-The 9000+ images are separated to two datasets (train and test):     
-**Train_image** : 7000 images as train data with 12100 variables;  
-**Test_image** : 2734 images as test data with 12100 variables;  
-Corresponding labels datasets:   
-**Volcano?** : if in the image there are volcanoes (Main target), 1 (yes) or 0 (no)  
+The 9000+ images are separated to four datasets (file names : train_images, train_labels, test_images, and test_labels):
+
+#### Image dataset (train_images and test_images)
+*Train_images* : 7000 images as train data with 12100 variables;  
+*Test_images* : 2734 images as test data with 12100 variables; 
+All the variables correspond to the pixel image, 110 pixel * 110 pixel = 12100.
+
+#### Label dataset (tain_labels and test_labels)
+Both *train_labels* and *test_label* datasets include the following labels:   
+1. *Volcano?* : if in the image there are volcanoes (Main target), 1 (yes) or 0 (no)  
 (If Volcano? = 0, the following three categories would be "nan")  
-**Type** : 1= definitely a volcano,2 =probably, 3= possibly, 4= only a pit is visible   
-**Radius** : is the radius of the volcano in the center of the image, in pixels   
-**Number Volcanoes** : The number of volcanoes in the image  
+2. *Type* : 1= definitely a volcano,2 =probably, 3= possibly, 4= only a pit is visible   
+3. *Radius* : is the radius of the volcano in the center of the image, in pixels   
+4. *Number Volcanoes* : The number of volcanoes in the image  
+For this project, we will focus mainly on predicting whether each image has a volcanoe or not. In addition, if the classification prediction goes well, we will also construct model to predict the number of volcanoes in the images.  
 
-
-## Data Import 1:
+## Data Import:
 Data downloaded from Kaggle were csv files, there are four data files in total. The four data files were imported into R : "train_images", "train_labels", "test_images", and "test_labels". Dimensions of the four data files are as follows:  
 train_images : 7000 observations and 12100 variables  
 train_labels : 7000 observations and 4 variables  
@@ -79,7 +84,11 @@ Kaggle. https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data
 In our project, we are interested in detecting the volcanoes on Venus by analyzing and classifying the images.  
 - Through our project, we are planning to apply k means clustering method to classify the images of the volcanoes into different categories.   
 - We will also utilize the linear discriminant analysis (LDA) and the quadratic discriminant analysis (QDA) in our project.    
-Our ultimate goal is to find the best method and build the best model that performs the best classification and has the minimum mean squared error to classify the images and match up with our label. 
+Our ultimate goal is to find the best method and build the best model that performs the best classification and has the minimum classification error to classify the images and match up with our label. 
+
+## Interpretation of our model and prediction
+This dataset is originally from NASA's Magellan spacecraft database. For this project, we aim in constructing mainly classification model to predict the valcanoes on Venus using the images dataset. If the classification model works well, we will continue to construct regression model to predict the number of volcanoes in the images.  
+Our target model response are "Is there Volcanoe or not" (this will be done using classfication model) and "Number of Volcanoes" (this will be done using regression model). Prediction error for classification model will be calculated using classification error, whereas the prediction error for regression model will be calculated using root mean square error (RMSE).
 
 ## Challenges:
 - We are dealing with large datasets (roughly 400 MB in total).
