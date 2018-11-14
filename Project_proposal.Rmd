@@ -12,14 +12,14 @@ output:
 
 ## Dataset Description:
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. 9734 images were captured by the spacecraft and converted to pixel (110x110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
-The 9000+ images are separated to four datasets (file names : train_images, train_labels, test_images, and test_labels):
+The 9000+ images are separated to four datasets (file names : *train_images*, *train_labels*, *test_images*, and *test_labels*):
 
-#### Image dataset (train_images and test_images)
+#### Image dataset (*train_images* and *test_images*)
 *Train_images* : 7000 images as train data with 12100 variables;  
 *Test_images* : 2734 images as test data with 12100 variables; 
 All the variables correspond to the pixel image, 110 pixel * 110 pixel = 12100.
 
-#### Label dataset (tain_labels and test_labels)
+#### Label dataset (*tain_labels* and *test_labels*)
 Both *train_labels* and *test_label* datasets include the following labels:   
 1. *Volcano?* : if in the image there are volcanoes (Main target), 1 (yes) or 0 (no)  
 (If Volcano? = 0, the following three categories would be "nan")  
@@ -29,12 +29,12 @@ Both *train_labels* and *test_label* datasets include the following labels:
 For this project, we will focus mainly on predicting whether each image has a volcanoe or not. In addition, if the classification prediction goes well, we will also construct model to predict the number of volcanoes in the images.  
 
 ## Data Import:
-Data downloaded from Kaggle were csv files, there are four data files in total. The four data files were imported into R : "train_images", "train_labels", "test_images", and "test_labels". Dimensions of the four data files are as follows:  
-train_images : 7000 observations and 12100 variables  
-train_labels : 7000 observations and 4 variables  
-test_images : 2734 observations and 12100 variables  
-test_labels : 2734 observations and 4 variables  
-Initial observations of the four data files are printed as following (due to large number of variables, for the "_images" files, only first 18 variables are printed):   
+Data downloaded from Kaggle were csv files, there are four data files in total. The four data files were imported into R, dimensions of the four data files are as follows:  
+*train_images* : 7000 observations and 12100 variables  
+*train_labels* : 7000 observations and 4 variables  
+*test_images* : 2734 observations and 12100 variables  
+*test_labels* : 2734 observations and 4 variables  
+Initial observations of the four data files are printed as following (due to large number of variables, for the *train_images* and *test_images* files, only first 18 variables are printed):   
 ```{r, echo=FALSE}
 library(data.table)
 location = "/Users/hannahpu/OneDrive - University of Illinois - Urbana/STAT432/Project/"
@@ -48,22 +48,22 @@ test.y = fread(paste0(location, "test_labels.csv"), header = TRUE)
 #test.y = read.csv(paste0(location, "test_labels.csv"), header = TRUE)
 ```
 
-**1. "train_images"**
+**1. *train_images* **
 ```{r}
 head(train.x[,1:18])
 ```
 
-**2. "train_labels"**
+**2. *train_labels* **
 ```{r}
 head(train.y)
 ```
 
-**3. "test_images"**
+**3. *test_images* **
 ```{r}
 head(test.x[,1:18])
 ```
 
-**4. "test_labels"**
+**4. *test_labels* **
 ```{r}
 head(test.y)
 ```
@@ -87,7 +87,7 @@ In our project, we are interested in detecting the volcanoes on Venus by analyzi
 Our ultimate goal is to find the best method and build the best model that performs the best classification and has the minimum classification error to classify the images and match up with our label. 
 
 ## Interpretation of our model and prediction
-This dataset is originally from NASA's Magellan spacecraft database. For this project, we are using Image datasets (Train_images and Test_images) as our features and Label data datasets (train_labels and test_labels) as our labels. Each label contains 3 variables as mentioned in the Data Description: *Volcano?*, *Type*, *Radius*, *Number Volcanoes*. The variable *Volcano?* is 1 meaning that there is a volcano in the image. Other 3 variables further describe the volcano in the image. However, the variable *Volcano?* is 0 meaning that there is no volcano in the image. Other 3 variables would be not available(NA). First of all, We aim in constructing mainly classification model to predict whether there exist a valcano on each image. If the classification model works well, we will continue to further doing analysis based on the images which we identify as containing at least one volcano to predict the number of volcanoes in the images.   
+This dataset is originally from NASA's Magellan spacecraft database. For this project, we are using Image datasets (*train_images* and *test_images*) as our features and Label data datasets (*train_labels* and *test_labels*) as our labels. Each label contains 3 variables as mentioned in the Data Description: *Volcano?*, *Type*, *Radius*, *Number Volcanoes*. The variable *Volcano?* is 1 meaning that there is a volcano in the image. Other 3 variables further describe the volcano in the image. However, the variable *Volcano?* is 0 meaning that there is no volcano in the image. Other 3 variables would be not available(NA). First of all, We aim in constructing mainly classification model to predict whether there exist a valcano on each image. If the classification model works well, we will continue to further doing analysis based on the images which we identify as containing at least one volcano to predict the number of volcanoes in the images.   
 Our target model response are "Is there Volcanoe or not" (this will be done using classfication model) and "Number of Volcanoes" (this will be done using regression model). Prediction error for classification model will be calculated using classification error, whereas the prediction error for regression model will be calculated using root mean square error (RMSE).
 
 ## Challenges:
