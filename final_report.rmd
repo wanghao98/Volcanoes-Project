@@ -44,3 +44,6 @@ We aim in constructing classification model to predict whether there exist a val
 
 We aim in constructing mainly classification model to predict whether there exist a valcano through image. If the classification model works well, we will continue to further doing analysis based on the images which we identify as containing at least one volcano to predict the number of volcanoes in the images.  
 
+### Literature review:
+
+In the Kaggle, the data analysis of the project is done in Python. People have already had vivid data visualization and exploratory data. Different methods have been used, such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. People have reached the 95% accuracy. 
