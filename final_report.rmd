@@ -52,7 +52,6 @@ In the Kaggle, the data analysis of the project is done in Python. People have a
 #################
 # load datasets #
 #################
-
 load("test_data.RData")
 load("train_data.Rdata")
 
@@ -66,10 +65,10 @@ test_y <- read.csv("test_labels.csv", header = TRUE)
 # train label file (no header) : 7000*4
 # test image file (no header) : 2734*12100
 # test label file (header) : 2734*4
-dim(train_data)
-dim(test_data)
-dim(train_y)
-dim(test_y)
+cat("The dimension of the train image file is:", dim(train_data))
+cat("The dimension of the test image file is:", dim(test_data))
+cat("The dimension of the train label file is:", dim(train_y))
+cat("The dimension of the test label file is:", dim(test_y))
 
 ########################
 # check missing values #
@@ -79,6 +78,18 @@ colnames(train_data)[colSums(is.na(train_data)) > 0]
 colnames(train_y)[colSums(is.na(train_y)) > 0]
 colnames(test_data)[colSums(is.na(test_data)) > 0]
 colnames(test_y)[colSums(is.na(test_y)) > 0]
+cat("Only labels have NAs.")
+
+# test_y has 2300 missing observations
+# train_y has 6000 missing observations
+cat("test_y has", sum(is.na(test_y$Type)), "missing observations.")
+cat("train_y has", sum(is.na(train_y$Type)), "missing observations.")
+
+# set the missing values to 0
+test_y[is.na(test_y$Type), ] <- 0
+test_y[is.na(test_y$Radius), ] <- 0
+train_y[is.na(train_y$Type), ] <- 0
+train_y[is.na(train_y$Radius), ] <- 0
 
 #######
 # EDA #
@@ -93,4 +104,6 @@ volplot <- function(data, obs){
   image(m, col = grey((0:255)/255))
 }
 ```
+
+
 
