@@ -40,7 +40,6 @@ For this project, we will focus mainly on predicting whether each image has a vo
 
 ### Scientific goal:
 
-We aim in constructing classification model to predict whether there exist a valcano through image.  
+We aim in constructing classification model to predict whether there exist a valcano through image. Identifying valcano through IT technology would increase the efficency of space exploration and safty of the crews. 
 
-We aim in constructing mainly classification model to predict whether there exist a valcano through image. If the classification model works well, we will continue to further doing analysis based on the images which we identify as containing at least one volcano to predict the number of volcanoes in the images.  
 
