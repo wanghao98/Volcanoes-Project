@@ -47,3 +47,50 @@ We aim in constructing mainly classification model to predict whether there exis
 ### Literature review:
 
 In the Kaggle, the data analysis of the project is done in Python. People have already had vivid data visualization and exploratory data. Different methods have been used, such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. People have reached the 95% accuracy. 
+
+```{r}
+#################
+# load datasets #
+#################
+
+load("test_data.RData")
+load("train_data.Rdata")
+
+train_y <- read.csv("train_labels.csv", header = TRUE)
+test_y <- read.csv("test_labels.csv", header = TRUE)
+
+###################
+# Check dimension #
+###################
+# train image file (no header) : 7000*12100
+# train label file (no header) : 7000*4
+# test image file (no header) : 2734*12100
+# test label file (header) : 2734*4
+dim(train_data)
+dim(test_data)
+dim(train_y)
+dim(test_y)
+
+########################
+# check missing values #
+########################
+#only y has NAs
+colnames(train_data)[colSums(is.na(train_data)) > 0]
+colnames(train_y)[colSums(is.na(train_y)) > 0]
+colnames(test_data)[colSums(is.na(test_data)) > 0]
+colnames(test_y)[colSums(is.na(test_y)) > 0]
+
+#######
+# EDA #
+#######
+##plot
+## trainset rows that have volcanoes: 1,10,16,30,35,39
+
+volplot <- function(data, obs){
+  im <- as.numeric(data[obs,])
+  # im <- sapply(train_data[obs, ], as.numeric)
+  m <- matrix(im, nrow = 110, byrow = TRUE)
+  image(m, col = grey((0:255)/255))
+}
+```
+
