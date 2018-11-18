@@ -107,12 +107,6 @@ volplot <- function(data, obs){
 
 ```{r}
 library(keras)
-model <- keras_model_sequential() %>%
-layer_conv_2d(filters = 8, kernel_size = c(3, 3), activation = "relu", input_shape = c(w, nCol, 1)) %>%
-layer_conv_2d(filters = 8, kernel_size = c(1, 1), activation = "relu") %>%
-layer_conv_2d(filters = 8, kernel_size = c(4, 1), activation = "relu") %>%
-layer_flatten() %>%
-layer_dense(units = 8, activation = "relu") %>%
 ```
 
 ```{r}
@@ -126,7 +120,17 @@ model <- keras_model_sequential() %>%
   layer_dense(units = 64, activation = "relu") %>%
   layer_dense(units = 10, activation = "softmax")
 
-
+train_images <- array(NA, c(110, 110, 7000))
+for (i in 1:7000) {
+  train_images[,,i] <- array_reshape(as.numeric(train_data[i,]), c(110, 110))
+  # 95  101   99  103   95   86   96   89   70   104   115    96    89   102   109
+}
+test_images <- sapply(test_data, as.numeric)
+m <- sapply(test_images, matrix, nrow = 110, byrow = TRUE)
+m <- matrix(im, nrow = 110, byrow = TRUE)
+for (i in 1:2734) {
+  test_images[i,,]
+}
 c(c(train_images, train_labels), c(test_images, test_labels)) %<-% mnist
 train_images <- array_reshape(as.numeric(train_data), c(7000, 110, 110))
 train_images <- train_images / 255
@@ -134,8 +138,8 @@ train_images <- train_images / 255
 test_images <- sapply(test_data, as.numeric)
 test_images <- array_reshape(test_images, c(2734, 110, 110))
 test_images <- test_images / 255
-train_labels <- to_categorical(train_labels)
-test_labels <- to_categorical(test_labels)
+train_labels <- to_categorical(train_y[,1])
+test_labels <- to_categorical(test_y[,1])
 
 model %>% compile(
   optimizer = "rmsprop",
