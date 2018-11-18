@@ -51,7 +51,6 @@ In the Kaggle, the data analysis of the project is done in Python. People have a
 #################
 # load datasets #
 #################
-
 load("test_data.RData")
 load("train_data.Rdata")
 
@@ -65,10 +64,10 @@ test_y <- read.csv("test_labels.csv", header = TRUE)
 # train label file (no header) : 7000*4
 # test image file (no header) : 2734*12100
 # test label file (header) : 2734*4
-dim(train_data)
-dim(test_data)
-dim(train_y)
-dim(test_y)
+cat("The dimension of the train image file is:", dim(train_data))
+cat("The dimension of the test image file is:", dim(test_data))
+cat("The dimension of the train label file is:", dim(train_y))
+cat("The dimension of the test label file is:", dim(test_y))
 
 ########################
 # check missing values #
@@ -78,6 +77,18 @@ colnames(train_data)[colSums(is.na(train_data)) > 0]
 colnames(train_y)[colSums(is.na(train_y)) > 0]
 colnames(test_data)[colSums(is.na(test_data)) > 0]
 colnames(test_y)[colSums(is.na(test_y)) > 0]
+cat("Only labels have NAs.")
+
+# test_y has 2300 missing observations
+# train_y has 6000 missing observations
+cat("test_y has", sum(is.na(test_y$Type)), "missing observations.")
+cat("train_y has", sum(is.na(train_y$Type)), "missing observations.")
+
+# set the missing values to 0
+test_y[is.na(test_y$Type), ] <- 0
+test_y[is.na(test_y$Radius), ] <- 0
+train_y[is.na(train_y$Type), ] <- 0
+train_y[is.na(train_y$Radius), ] <- 0
 
 #######
 # EDA #
@@ -91,5 +102,57 @@ volplot <- function(data, obs){
   m <- matrix(im, nrow = 110, byrow = TRUE)
   image(m, col = grey((0:255)/255))
 }
+```
+
+```{r}
+library(keras)
+```
+
+```{r}
+model <- keras_model_sequential() %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", input_shape = c(110, 110, 1)) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_flatten() %>% # flatten 3D to 1D
+  layer_dense(units = 64, activation = "relu") %>%
+  layer_dense(units = 10, activation = "softmax")
+
+train_images <- array(NA, c(110, 110, 7000))
+for (i in 1:7000) {
+  train_images[,,i] <- array_reshape(as.numeric(train_data[i,]), c(110, 110))
+  # 95  101   99  103   95   86   96   89   70   104   115    96    89   102   109
+}
+test_images <- sapply(test_data, as.numeric)
+m <- sapply(test_images, matrix, nrow = 110, byrow = TRUE)
+m <- matrix(im, nrow = 110, byrow = TRUE)
+for (i in 1:2734) {
+  test_images[i,,]
+}
+c(c(train_images, train_labels), c(test_images, test_labels)) %<-% mnist
+train_images <- array_reshape(as.numeric(train_data), c(7000, 110, 110))
+train_images <- train_images / 255
+
+test_images <- sapply(test_data, as.numeric)
+test_images <- array_reshape(test_images, c(2734, 110, 110))
+test_images <- test_images / 255
+train_labels <- to_categorical(train_y[,1])
+test_labels <- to_categorical(test_y[,1])
+
+model %>% compile(
+  optimizer = "rmsprop",
+  loss = "categorical_crossentropy",
+  metrics = c("accuracy")
+)
+
+model %>% fit(
+  train_images, train_labels,
+  epochs = 5, batch_size=64
+)
+
+results <- model %>% evaluate(test_images, test_labels)
+results
+
 ```
 
