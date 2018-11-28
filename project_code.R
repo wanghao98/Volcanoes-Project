@@ -7,14 +7,17 @@ library(data.table)
 library(bigalgebra)
 library(irlba)
 library(glmnet)
+library(lme4)
+library(doParallel)
+library(foreach)
 
 #### Data input
-load("train_data.RData")
-load("test_data.RData")
+load("..//train_data.RData")
+load("..//test_data.RData")
 train.x = train_data
 test.x = test_data
-train.y = read.csv("train_labels.csv", header = TRUE)
-test.y = read.csv("test_labels.csv", header = TRUE)
+train.y = read.csv("..//train_labels.csv", header = TRUE)
+test.y = read.csv("..//test_labels.csv", header = TRUE)
 train = cbind(volcanoe = train.y[,1], train_data)
 
 #### Check dimension
@@ -64,6 +67,7 @@ preprocess.svd(train, n.comp)
 #current result: accuracy 92.7944 (lambda= 0.001882239)
 train.x = as.matrix(train.x)
 train.y=as.matrix(train.y[,1])
+test.y = as.matrix(test.y[,1])
 lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial")
 
 pred = predict(lasmodel, newx=as.matrix(test.x), type = "response")
@@ -95,8 +99,50 @@ var.sel = row.names(mylasso.coef.1se)[nonzeroCoef(mylasso.coef.1se)[-1]]
 tmp.X = X[, colnames(X) %in% var.sel]
 
 
-#logistic
-logmodel = glm(volcanoe~., data=train.svd, family = binomial)
+#logistic (marginal screening)
+cl <- makeCluster(3)
+registerDoParallel(cl)
+
+pre = Sys.time()
+vol_results <- foreach(j = 1:ncol(train.x), .packages = 'lme4', .combine='rbind') %dopar% {
+  
+  pix = scale(train.x[,j])
+  fit.glm <- summary(glm(as.factor(train.y) ~ pix, family = "binomial"))
+  fit.glm$coefficients[2,4]
+}
+
+Sys.time() - pre
+
+stopCluster(cl)
+
+rownames(vol_results) = colnames(train.x)
+colnames(vol_results) = "glm.p value"
+
+save(vol_results, file = "vol_result.RData")
+
+totalpix = 400
+sortedresults = as.matrix(vol_results[order(vol_results),])
+usepix = names(sortedresults[1:totalpix,])
+
+top_loc = match(usepix, rownames(vol_results))
+
+sel.pix = train.x[,top_loc]
+
+training = data.frame(train.y,sel.pix)
+colnames(training) = c("volcano",colnames(sel.pix))
+
+test.x = as.matrix(test.x)
+test.pipx = test.x[,top_loc]
+
+
+logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
+
+train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5) #0.9148571
+log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
+
+table(log_pred,test.y) # accuracy = 0.892831
+
+
 
 #LDA
 ldmodel = lda(train.x, train.y)
