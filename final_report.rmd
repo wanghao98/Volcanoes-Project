@@ -156,3 +156,68 @@ results
 
 ```
 
+## Methods
+Models we used:
+Lasso
+ElasticNet
+### Evaluation metric
+Our models were evaluated by calculating the classification error coded as following:
+```{r}
+predfunc= function(a){
+  mean(as.numeric(a > 0.5) == test_y[,1])*100
+}
+predfunc_train = function(a){
+  mean(as.numeric(a > 0.5) == train_y[,1])*100
+}
+```
+
+
+## Results and Discussion
+
+### Challenges encountered
+Our dataset is pretty large, and the number of variables (12100 variables) are larger than observations (2734 observations).
+
+### Results of model and analysis to predict whether there is volcanoe or not
+#### Lasso
+Using Lasso to predict, first tune with `cv.glmnet`, then use `lambda.min` to fit lasso model and do prediction on test data. The classification accuracy on test data is 92.4%. Training error was calculated to be 77.5%, therefore there seemes to be no overfitting.
+```{r}
+library(glmnet)
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,1])
+lam.seq = exp(seq(-6.5, -5, length=100))
+cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = lam.seq)
+lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = cv.out$lambda.min)
+pred = predict(lasmodel, newx=as.matrix(test_data), type = "response")
+```
+Testing error:
+```{r}
+pred.cal = apply(pred, 2, predfunc)
+pred.cal
+table(as.numeric(pred > 0.5), test_y[,1])
+```
+Training error:
+```{r}
+pred_train = predict(lasmodel, newx=as.matrix(train_data),type = "response")
+pred.cal.train = apply(pred, 2, predfunc_train)
+pred.cal.train
+table(as.numeric(pred_train > 0.5), train_y[,1])
+```
+In total, 405 variables were selected by Lasso. Selected variables spread accross the 110*110 pixel images.
+```{r}
+mylasso.coef = predict(lasmodel, s = cv.out$lambda.min, type = "coefficients")
+sum(mylasso.coef != 0) - 1 
+var.sel = row.names(mylasso.coef)[nonzeroCoef(mylasso.coef)[-1]]
+var.sel
+```
+
+
+## References
+
+
+
+
+
+
+
+
+
