@@ -110,50 +110,54 @@ library(keras)
 ```
 
 ```{r}
-model <- keras_model_sequential() %>%
-  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", input_shape = c(110, 110, 1)) %>%
-  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
-  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
-  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
-  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
-  layer_flatten() %>% # flatten 3D to 1D
-  layer_dense(units = 64, activation = "relu") %>%
-  layer_dense(units = 10, activation = "softmax")
-
-train_images <- array(NA, c(110, 110, 7000))
-for (i in 1:7000) {
-  train_images[,,i] <- array_reshape(as.numeric(train_data[i,]), c(110, 110))
-  # 95  101   99  103   95   86   96   89   70   104   115    96    89   102   109
+## use 200 images for toy model
+train_images <- array(NA, c(2000, 110, 110))
+train_data_num <- sapply(train_data[1:2000,], as.numeric)
+for (i in 1:2000) {
+  train_images[i,,] <- array_reshape(train_data_num[i,], c(110, 110))
 }
-test_images <- sapply(test_data, as.numeric)
-m <- sapply(test_images, matrix, nrow = 110, byrow = TRUE)
-m <- matrix(im, nrow = 110, byrow = TRUE)
-for (i in 1:2734) {
-  test_images[i,,]
-}
-c(c(train_images, train_labels), c(test_images, test_labels)) %<-% mnist
-train_images <- array_reshape(as.numeric(train_data), c(7000, 110, 110))
+train_images <- array_reshape(train_images, c(2000, 110, 110, 1))
 train_images <- train_images / 255
 
-test_images <- sapply(test_data, as.numeric)
-test_images <- array_reshape(test_images, c(2734, 110, 110))
+test_images <- array(NA, c(400, 110, 110))
+test_data_num <- sapply(test_data[1:400,], as.numeric)
+for (i in 1:400) {
+  test_images[i,,] <- array_reshape(test_data_num[i,], c(110, 110))
+}
+test_images <- array_reshape(test_images, c(400, 110, 110, 1))
 test_images <- test_images / 255
-train_labels <- to_categorical(train_y[,1])
-test_labels <- to_categorical(test_y[,1])
+
+train_y_volcano <- to_categorical(train_y$Volcano.[1:2000])
+test_y_volcano <- to_categorical(test_y$Volcano.[1:400])
+```
+
+```{r}
+model <- keras_model_sequential() %>%
+  layer_conv_2d(filters = 8, kernel_size = c(3, 3), activation = "relu", input_shape = c(110, 110, 1)) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  # layer_dropout(rate = 0.2) %>%
+  layer_conv_2d(filters = 16, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  # layer_dropout(rate = 0.3) %>% 
+  layer_conv_2d(filters = 16, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_flatten() %>% # flatten 3D to 1D
+  # layer_dense(units = 16, activation = "relu") %>%
+  layer_dense(units = 2, activation = "softmax")
 
 model %>% compile(
-  optimizer = "rmsprop",
-  loss = "categorical_crossentropy",
+  optimizer = "adam",
+  loss = "binary_crossentropy",
   metrics = c("accuracy")
 )
 
 model %>% fit(
-  train_images, train_labels,
-  epochs = 5, batch_size=64
+  train_images, train_y_volcano,
+  epochs = 30, batch_size=32,
+  validation_split = 0.2
 )
 
-results <- model %>% evaluate(test_images, test_labels)
+results <- model %>% evaluate(test_images, test_y_volcano)
 results
-
+model %>% predict_classes(test_images)
 ```
 
