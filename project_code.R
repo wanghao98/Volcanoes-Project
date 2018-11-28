@@ -12,12 +12,12 @@ library(doParallel)
 library(foreach)
 
 #### Data input
-load("..//train_data.RData")
-load("..//test_data.RData")
+load("train_data.RData")
+load("test_data.RData")
 train.x = train_data
 test.x = test_data
-train.y = read.csv("..//train_labels.csv", header = TRUE)
-test.y = read.csv("..//test_labels.csv", header = TRUE)
+train.y = read.csv("train_labels.csv", header = TRUE)
+test.y = read.csv("test_labels.csv", header = TRUE)
 train = cbind(volcanoe = train.y[,1], train_data)
 
 #### Check dimension
