@@ -182,6 +182,7 @@ predfunc_train = function(a){
 Our dataset is pretty large, and the number of variables (12100 variables) are larger than observations (2734 observations).
 
 ### Results of model and analysis to predict whether there is volcanoe or not
+
 #### Lasso
 Using Lasso to predict, first tune with `cv.glmnet`, then use `lambda.min` to fit lasso model and do prediction on test data. The classification accuracy on test data is 92.4%. Training error was calculated to be 77.5%, therefore there seemes to be no overfitting.
 ```{r}
@@ -214,6 +215,75 @@ var.sel = row.names(mylasso.coef)[nonzeroCoef(mylasso.coef)[-1]]
 var.sel
 ```
 
+#### logistic regression (MarginalScreening)
+
+First, using marginal Screening to select the top 400 pixels (which gives the minimal prediction error). Then, using those 400 pixels to predict test data. The training error is 0.92. Prediction error is 0.89.
+
+Marginal Screening
+```{r}
+library(lme4)
+library(doParallel)
+library(foreach)
+cl <- makeCluster(3)
+registerDoParallel(cl)
+
+pre = Sys.time()
+vol_results <- foreach(j = 1:ncol(train.x), .packages = 'lme4', .combine='rbind') %dopar% {
+  
+  pix = scale(train.x[,j])
+  fit.glm <- summary(glm(as.factor(train.y) ~ pix, family = "binomial"))
+  fit.glm$coefficients[2,4]
+}
+
+Sys.time() - pre
+
+stopCluster(cl)
+
+rownames(vol_results) = colnames(train.x)
+colnames(vol_results) = "glm.p value"
+
+#save(vol_results, file = "vol_result.RData")
+
+totalpix = 400
+sortedresults = as.matrix(vol_results[order(vol_results),])
+usepix = names(sortedresults[1:totalpix,])
+
+top_loc = match(usepix, rownames(vol_results))
+
+sel.pix = train.x[,top_loc]
+
+training = data.frame(train.y,sel.pix)
+colnames(training) = c("volcano",colnames(sel.pix))
+
+test.x = as.matrix(test_data)
+test.pipx = test.x[,top_loc]
+```
+
+
+Logistic model fit:
+
+```{r}
+logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
+```
+
+
+Training error:
+
+```{r}
+train.pred = predict(logmodel, data.frame(sel.pix), type = "response")
+pred.cal.train = apply(as.matrix(train.pred), 2, predfunc_train)
+pred.cal.train
+table(as.numeric(train.pred > 0.5), train_y[,1])
+```
+
+Test error:
+
+```{r}
+log_pred = predict(logmodel, data.frame(test.pipx), type = "response")
+pred.cal = apply(as.matrix(log_pred), 2, predfunc)
+pred.cal
+table(as.numeric(log_pred > 0.5), test_y[,1])
+```
 
 ## References
 
