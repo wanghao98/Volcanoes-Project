@@ -51,8 +51,8 @@ In the Kaggle, the data analysis of the project is done in Python. People have a
 #################
 # load datasets #
 #################
-load("test_data.RData")
-load("train_data.Rdata")
+load("~/Volcano Project/test_data.RData")
+load("~/Volcano Project/train_data.Rdata")
 
 train_y <- read.csv("train_labels.csv", header = TRUE)
 test_y <- read.csv("test_labels.csv", header = TRUE)
@@ -109,25 +109,25 @@ library(keras)
 ```
 
 ```{r}
-## use 200 images for toy model
-train_images <- array(NA, c(2000, 110, 110))
-train_data_num <- sapply(train_data[1:2000,], as.numeric)
-for (i in 1:2000) {
+train_data_num <- sapply(train_data, as.numeric)
+test_data_num <- sapply(test_data, as.numeric)
+
+train_images <- array(NA, c(7000, 110, 110))
+for (i in 1:7000) {
   train_images[i,,] <- array_reshape(train_data_num[i,], c(110, 110))
 }
-train_images <- array_reshape(train_images, c(2000, 110, 110, 1))
+train_images <- array_reshape(train_images, c(7000, 110, 110, 1))
 train_images <- train_images / 255
 
-test_images <- array(NA, c(400, 110, 110))
-test_data_num <- sapply(test_data[1:400,], as.numeric)
-for (i in 1:400) {
+test_images <- array(NA, c(2734, 110, 110))
+for (i in 1:2734) {
   test_images[i,,] <- array_reshape(test_data_num[i,], c(110, 110))
 }
-test_images <- array_reshape(test_images, c(400, 110, 110, 1))
+test_images <- array_reshape(test_images, c(2734, 110, 110, 1))
 test_images <- test_images / 255
 
-train_y_volcano <- to_categorical(train_y$Volcano.[1:2000])
-test_y_volcano <- to_categorical(test_y$Volcano.[1:400])
+train_y_volcano <- to_categorical(train_y$Volcano.)
+test_y_volcano <- to_categorical(test_y$Volcano.)
 ```
 
 ```{r}
@@ -139,7 +139,7 @@ model <- keras_model_sequential() %>%
   layer_max_pooling_2d(pool_size = c(2, 2)) %>%
   # layer_dropout(rate = 0.3) %>% 
   layer_conv_2d(filters = 16, kernel_size = c(3, 3), activation = "relu") %>%
-  layer_flatten() %>% # flatten 3D to 1D
+  layer_flatten() %>%
   # layer_dense(units = 16, activation = "relu") %>%
   layer_dense(units = 2, activation = "softmax")
 
@@ -149,15 +149,17 @@ model %>% compile(
   metrics = c("accuracy")
 )
 
-model %>% fit(
+model_ret <- model %>% fit(
   train_images, train_y_volcano,
-  epochs = 30, batch_size=32,
+  epochs = 50, batch_size=32,
   validation_split = 0.2
 )
+plot(model_ret)
 
 results <- model %>% evaluate(test_images, test_y_volcano)
 results
-model %>% predict_classes(test_images)
+pred_results <- model %>% predict_classes(test_images)
+table(pred_results, test_y$Volcano.)
 ```
 
 ## Methods
