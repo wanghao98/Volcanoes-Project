@@ -7,9 +7,6 @@ library(data.table)
 library(bigalgebra)
 library(irlba)
 library(glmnet)
-library(lme4)
-library(doParallel)
-library(foreach)
 
 #### Data input
 load("train_data.RData")
@@ -67,7 +64,6 @@ preprocess.svd(train, n.comp)
 #current result: accuracy 92.7944 (lambda= 0.001882239)
 train.x = as.matrix(train.x)
 train.y=as.matrix(train.y[,1])
-test.y = as.matrix(test.y[,1])
 lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial")
 
 pred = predict(lasmodel, newx=as.matrix(test.x), type = "response")
@@ -99,60 +95,99 @@ var.sel = row.names(mylasso.coef.1se)[nonzeroCoef(mylasso.coef.1se)[-1]]
 tmp.X = X[, colnames(X) %in% var.sel]
 
 
-#logistic (marginal screening)
-cl <- makeCluster(3)
-registerDoParallel(cl)
-
-pre = Sys.time()
-vol_results <- foreach(j = 1:ncol(train.x), .packages = 'lme4', .combine='rbind') %dopar% {
-  
-  pix = scale(train.x[,j])
-  fit.glm <- summary(glm(as.factor(train.y) ~ pix, family = "binomial"))
-  fit.glm$coefficients[2,4]
-}
-
-Sys.time() - pre
-
-stopCluster(cl)
-
-rownames(vol_results) = colnames(train.x)
-colnames(vol_results) = "glm.p value"
-
-save(vol_results, file = "vol_result.RData")
-
-totalpix = 400
-sortedresults = as.matrix(vol_results[order(vol_results),])
-usepix = names(sortedresults[1:totalpix,])
-
-top_loc = match(usepix, rownames(vol_results))
-
-sel.pix = train.x[,top_loc]
-
-training = data.frame(train.y,sel.pix)
-colnames(training) = c("volcano",colnames(sel.pix))
-
-test.x = as.matrix(test.x)
-test.pipx = test.x[,top_loc]
-
-
-logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
-
-train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5) #0.9148571
-log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
-
-table(log_pred,test.y) # accuracy = 0.892831
-
-
+#logistic
+logmodel = glm(volcanoe~., data=train.svd, family = binomial)
 
 #LDA
 ldmodel = lda(train.x, train.y)
 
 #random forest
-rfmodel = randomForest(train.x, y=train.y[,1])
+rfmodel = randomForest(train.x, y=train.y[,1], ntree = 200)
 
 #neural network
 
+#xgboost
+#accuracy: 93.56255
+library(xgboost)
+train.x = as.matrix(train.x)
+train.y=as.matrix(train.y[,1])
+params <- list(
+  eta = 0.1,
+  max_depth = 7,
+  min_child_weight =5,
+  subsample = 0.65,
+  colsample_bytree = 0.8,
+  silent = 1
+)
+xgb.fit.final <- xgboost(
+  params = params,
+  data = as.matrix(train.x),
+  label = train.y,
+  nrounds = 200,
+  objective = 'binary:logistic',
+  verbose = 0
+)
+
+xgpred = predict(xgb.fit.final, as.matrix(test.x))
+
+predfunc= function(a){
+  mean(as.numeric(a > 0.5) == test.y[,1])*100
+}
+xgpred.cal = mean(as.numeric(xgpred > 0.5) == test.y[,1])*100
+xgpred.cal
 
 
+##xgtuning
+#tune
+hyper_grid <- expand.grid(
+  eta = c(.05, .1, .3),
+  max_depth = c(3, 5, 7),
+  min_child_weight = c(3, 5, 7),
+  subsample = c(.65, .8, 1), 
+  colsample_bytree = c(.8, .9, 1),
+  optimal_trees = 0,               # a place to dump results
+  min_RMSE = 0                     # a place to dump results
+)
 
+# grid search 
+start.time = proc.time()
+
+for(i in 1:nrow(hyper_grid)) {
+  print(i)
+  
+  # create parameter list
+  params <- list(
+    eta = hyper_grid$eta[i],
+    max_depth = hyper_grid$max_depth[i],
+    min_child_weight = hyper_grid$min_child_weight[i],
+    subsample = hyper_grid$subsample[i],
+    colsample_bytree = hyper_grid$colsample_bytree[i]
+  )
+  
+  # reproducibility
+  set.seed(7607)
+  
+  # train model
+  xgb.tune <- xgb.cv(
+    params = params,
+    data = as.matrix(train.x),
+    label = train.y,
+    nrounds = 1000,
+    nfold = 5,
+    objective = 'binary:logistic',
+    verbose = 0,               # silent,
+    early_stopping_rounds = 10 # stop if no improvement for 10 consecutive trees
+  )
+  
+  # add min training error and trees to grid
+  hyper_grid$optimal_trees[i] <- which.min(xgb.tune$evaluation_log$test_error_mean)
+  hyper_grid$min_RMSE[i] <- min(xgb.tune$evaluation_log$test_error_mean)
+}
+
+total.time= proc.time() - start.time
+
+
+hyper_grid %>%
+  dplyr::arrange(min_RMSE) %>%
+  head(10)
 

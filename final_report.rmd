@@ -129,6 +129,7 @@ library(glmnet)
 library(lme4)
 library(doParallel)
 library(foreach)
+library(xgboost)
 ```
 
 ```{r}
@@ -241,8 +242,19 @@ pred_results <- model %>% predict_classes(test_images)
 table(pred_results, test_y$Volcano.)
 ```
 
+<<<<<<< HEAD
+## Methods
+Models we used:  
+Lasso  
+ElasticNet  
+Logistic  
+Neural network
+
+### Evaluation metric  
+=======
 
 ### Evaluation metric
+>>>>>>> 176a5d3a9b440ea2f87b55e05a069c046d9519db
 Our models were evaluated by calculating the classification error coded as following:
 ```{r}
 predfunc= function(a){
@@ -264,7 +276,6 @@ Our dataset is pretty large, and the number of variables (12100 variables) are l
 #### Lasso
 Using Lasso to predict, first tune with `cv.glmnet`, then use `lambda.min` to fit lasso model and do prediction on test data. The classification accuracy on test data is 92.4%. Training error was calculated to be 77.5%, therefore there seemes to be no overfitting.
 ```{r}
-# library(glmnet)
 train.x = as.matrix(train_data)
 train.y=as.matrix(train_y[,1])
 lam.seq = exp(seq(-6.5, -5, length=100))
@@ -362,6 +373,45 @@ pred.cal = apply(as.matrix(log_pred), 2, predfunc)
 pred.cal
 table(as.numeric(log_pred > 0.5), test_y[,1])
 ```
+
+### xgboost
+Using xgboost, the accuracy is 93.7%.
+```{r}
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,1])
+
+
+params <- list(
+  eta = 0.1,
+  max_depth = 5, #7
+  min_child_weight =5,
+  subsample = 0.65,
+  colsample_bytree = 0.8,
+  silent = 1
+)
+xgb.fit.final <- xgboost(
+  params = params,
+  data = as.matrix(train.x),
+  label = train.y,
+  nrounds = 200,
+  objective = 'binary:logistic',
+  verbose = 0
+)
+```
+
+```{r}
+xgpred = predict(xgb.fit.final, as.matrix(test_data))
+
+```
+
+```{r}
+xgpred1 = as.matrix(xgpred)
+xgpred.cal = apply(xgpred1, 2, predfunc)
+xgpred.cal
+table(as.numeric(xgpred1 > 0.5), test_y[,1])
+
+```
+
 
 ## References
 
