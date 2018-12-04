@@ -157,10 +157,13 @@ results
 ```
 
 ## Methods
-Models we used:
-Lasso
-ElasticNet
-### Evaluation metric
+Models we used:  
+Lasso  
+ElasticNet  
+Logistic  
+Neural network
+
+### Evaluation metric  
 Our models were evaluated by calculating the classification error coded as following:
 ```{r}
 predfunc= function(a){
