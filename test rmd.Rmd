@@ -12,7 +12,6 @@ classoption: twocolumn
 
 ## INTRODUCTION
 
-
 ### Data Source Information
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
 
@@ -63,26 +62,9 @@ head(test_y)
 
 After exploring the datasets, we found only labels have NaNs. We have set the those values to 0, an insignicant value in our dataset. 
 
+### Data Visualization
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(ggplot2)
-train_y$Volcano. <- as.factor(train_y$Volcano.)
-ggplot(train_y, aes(x = Volcano., fill = Volcano.)) +
-  geom_bar(stat='count') +
-  labs(x = 'How many images have volcanoes?') +
-        geom_label(stat='count',aes(label=..count..), size=5) +
-        theme_grey(base_size = 18)
-```
-
-```{r echo=FALSE}
-train_y$Type <- as.factor(train_y$Type)
-ggplot(train_y[(train_y$Type != "NaN"),], aes(x = Type, fill = Type)) +
-  geom_bar(stat='count') +
-  labs(x = 'What are the types of volcanoes in the images?') +
-        geom_label(stat='count',aes(label=..count..), size=5) +
-        theme_grey(base_size = 18)
-```
-
+6 observations are picked to demonstrate how the images got labeled. Figure 1 - 4 show how well the volcanoes can be seen from the images (*Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible). Figure 5 contains 2 volcanoes, and Figure 6 contains no volcano at all. We can tell from the images that a bright white dot indicates a potential volcano, while the white dot might not be clear enough to see in the image, which means that it is hard to identify whether there is a volcano or not.
 
 ```{r volplot_function, echo=FALSE, fig.height=5, fig.width=5}
 volplot <- function(data, obs){
@@ -92,12 +74,61 @@ volplot <- function(data, obs){
 }
 ```
 
-```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 1 Type: 3 Radius: 17.46 Number of Volcanoes: 1"}
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 10 Type: 1 Radius: 22.02 Number Volcanoes: 1", fig.align='center'}
+par(mfrow = c(2, 2))
+volplot(train_data, 10)
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 39 Type: 2 Radius: 19.31 Number Volcanoes: 1", fig.align='center'}
+par(mfrow = c(2, 2))
+volplot(train_data, 39)
+```
+
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 1 Type: 3 Radius: 17.46 Number of Volcanoes: 1", fig.align='center'}
+par(mfrow = c(2, 2))
 volplot(train_data, 1)
 ```
 
-```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 10 Type: 1 Radius: 22.02 Number Volcanoes: 1"}
-volplot(train_data, 10)
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 30 Type: 4 Radius: 6.40 Number Volcanoes: 1", fig.align='center'}
+par(mfrow = c(2, 2))
+# train_y[which(train_y$Number.Volcanoes == 2),]
+volplot(train_data, 30)
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 289 Type: 1 Radius: 11.05 Number Volcanoes: 2", fig.align='center'}
+par(mfrow = c(2, 2))
+# train_y[289,]
+volplot(train_data, 289)
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 2 No Volcano", fig.align='center'}
+# train_y[2,]
+par(mfrow = c(2, 2))
+volplot(train_data, 2)
+```
+\newpage
+### Data Summary
+To facilitate the analysis process and explore the data, we have summarized the data. The `ggplot` has been used to visualize the training set labels. The first figure shows that only 1000 images in the training dataset have volcanoes. The second figure shows that within 1000 images that have volcanoes, how clearly we can identify the volcanoes. 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+train_y$Volcano. <- as.factor(train_y$Volcano.)
+levels(train_y$Volcano.) <- c("No", "Yes")
+ggplot(train_y, aes(x = Volcano., fill = Volcano.)) +
+  geom_bar(stat='count') +
+  labs(x = 'How many images have volcanoes?') +
+        geom_label(stat='count',aes(label=..count..), size=5) +
+        theme_grey(base_size = 18)
+```
+
+```{r echo=FALSE}
+train_y$Type <- as.factor(train_y$Type)
+levels(train_y$Type) <- c("definitely a volcano", "probably", "possibly", "only a pit is visible", "no volcano")
+ggplot(train_y[(train_y$Type != "no volcano"),], aes(x = Type, fill = Type)) +
+  geom_bar(stat='count') +
+  labs(x = 'How clearly can we identify the volcanoes?') +
+        geom_label(stat='count',aes(label=..count..), size=5) +
+        theme_grey(base_size = 18)
 ```
 
 ## METHODOLOGY
@@ -120,8 +151,7 @@ table(pred_results_class, test_y$Volcano.)
 library(MLmetrics)
 library(pROC)
 F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
-roc_obj <- roc(pred_results_class, test_y[,1])
-auc(roc_obj)
+auc(test_y[,1], pred_results[,2])
 ```
 
 \begin{center}
