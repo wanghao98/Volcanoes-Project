@@ -12,7 +12,6 @@ classoption: twocolumn
 
 ## INTRODUCTION
 
-
 ### Data Source Information
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
 
