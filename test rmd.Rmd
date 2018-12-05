@@ -106,8 +106,9 @@ volplot(train_data, 10)
 ## METHODOLOGY
 Models we used:  
 ### Lasso Regression  
+To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by ploting cross-validation error, which gives us the interval (-6.5, -5). Afterthat, we did the model selection by using cv.glmnet and use the "lambda.min" as final tuning parameter, which gives us 470 selected pixels. The prediction using those 470 pixels yielded a good start, a high prediction accuracy, for our following analysis. 
 ### Logistic Regression
-Before applying logistic regression, we tried Marginal Screening and lasso to apply variable selection. For Marginal Screenign part, by modeling each pixel in the *train_images*, we selected 400 pixels based on prediction accuracy. For Lasso regression, we selected pixels by using lambda.min and 470 pixels were selected. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their accuracies and AUC. 
+Before applying logistic regression, we tried Marginal Screening and lasso to apply variable selection. For Marginal Screenign part, by modeling each pixel in the *train_images* using glm function, we selected 400 pixels based on prediction accuracy. For Lasso regression, we selected pixels by using lambda.min and 470 pixels were selected. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their accuracies and AUC. 
 ### Neural Network  
 Neural Network was used in the project for seeking better classfication results. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
 
