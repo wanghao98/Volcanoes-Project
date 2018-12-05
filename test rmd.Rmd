@@ -104,12 +104,19 @@ volplot(train_data, 10)
 ```
 
 ## METHODOLOGY
-Models we used:  
+
+Models we used:
+
 ### Lasso Regression  
+
 To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by ploting cross-validation error, which gives us the interval (-6.5, -5). Afterthat, we did the model selection by using cv.glmnet and use the "lambda.min" as final tuning parameter, which gives us 470 selected pixels. The prediction using those 470 pixels yielded a good start, a high prediction accuracy, for our following analysis. 
+
 ### Logistic Regression
-Before applying logistic regression, we tried Marginal Screening and lasso to apply variable selection. For Marginal Screenign part, by modeling each pixel in the *train_images* using glm function, we selected 400 pixels based on prediction accuracy. For Lasso regression, we selected pixels by using lambda.min and 470 pixels were selected. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their accuracies and AUC. 
+
+Before applying logistic regression, we applied tow variable selection methods to reduce dimension. 400 pixels were selected by using Marginal Screening and 470 pixels were selected by using above Lasso Regression. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their F1 score and AUC. 
+
 ### Neural Network  
+
 Neural Network was used in the project for seeking better classfication results. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
 
 ```{r echo=FALSE, out.width="250px"}
@@ -124,3 +131,22 @@ knitr::include_graphics("000005.png")
 \multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{30}          & \multicolumn{1}{c|}{346}          \\ \cline{1-3}
 \end{tabular}
 \end{center}
+
+Variable selection methods we used:
+
+### Shrinking method (Lasso):
+
+By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels and apply those to lasso and logistic regression respectively.
+
+### Marginal Screening:
+
+To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels. The reason why we select top 400 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction error. 
+
+### Variable selection methods comparison:
+
+We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
+
+By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
+
+By applying those two different selection methods, we found the accuracy of Lasso selection is higher. Therefore, we may conclude that lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the egdes. 
+
