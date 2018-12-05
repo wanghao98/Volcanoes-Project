@@ -1,0 +1,124 @@
+---
+title: "Detecting Volcanoes on Venus via Classification (Where are the Volcanoes?!!)"
+subtitle: "STAT 432 Final Project"
+author: 
+- 'Team Mamamia!'
+- "Di Ye (diye2), Hao Wang (haow2),Hannah Pu (chpu2)"
+date: "November 17, 2018"
+output:
+  pdf_document:
+classoption: twocolumn
+---
+
+# Final Report
+
+## INTRODUCTION
+
+
+
+### Data Source Information
+The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
+
+
+### Data Description
+9734 images were captured by the spacecraft and converted to pixels (110 x 110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
+The 9000+ images are separated to four datasets (file names : *train_images*, *train_labels*, *test_images*, and *test_labels*):
+
+#### Image Dataset (*train_images* and *test_images*)
+*Train_images* : 7000 images as train data with 12100 variables;  
+*Test_images* : 2734 images as test data with 12100 variables; 
+All the variables (V1 to V12100) correspond to the pixel image, 110 pixels * 110 pixels = 12100 pixels.
+
+#### Label Dataset (*train_labels* and *test_labels*)
+A summary of the variables in both *train_labels* and *test_label* datasets is listed down below:   
+1. *Volcano?* : If in the image there exists at least one volcano, the label is 1 (Yes). Otherwise, the label is 0 (No). 
+(If Volcano? equals 0, the following three categories would be "NaN").
+2. *Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible   
+3. *Radius* : Is the radius of the volcano in the center of the image, in pixels?   
+4. *Number Volcanoes* : The number of volcanoes in the image.  
+
+### Literature Review
+In the Kaggle, the data analysis of the project is done in Python. People have already had vivid data visualization and exploratory data. Different methods have been used, such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. People have reached the 95% accuracy. 
+
+### Scientific Goal
+For this project, we will focus mainly on predicting whether each image has a volcano or not. In addition, if the classification prediction goes well, we will also construct models to predict the number of volcanoes in the images. We aim in constructing different classification models and choosing the best model to predict whether there exists a valcano in each image. Identifying valcano through IT technology would increase the efficency of space exploration and safty of the crews. 
+
+## EXPLORATORY DATA
+```{r include=FALSE}
+#################
+# load datasets #
+#################
+load("test_data.RData")
+load("train_data.Rdata")
+train_y <- read.csv("train_labels.csv", header = TRUE)
+test_y <- read.csv("test_labels.csv", header = TRUE)
+```
+
+The first 6 observations of *train_labels*
+```{r head_train_y, echo=FALSE}
+head(train_y)
+```
+
+The first 6 observations of *test_labels*
+```{r head_test_y, echo=FALSE}
+head(test_y)
+```
+
+After exploring the datasets, we found only labels have NaNs. We have set the those values to 0, an insignicant value in our dataset. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+train_y$Volcano. <- as.factor(train_y$Volcano.)
+ggplot(train_y, aes(x = Volcano., fill = Volcano.)) +
+  geom_bar(stat='count') +
+  labs(x = 'How many images have volcanoes?') +
+        geom_label(stat='count',aes(label=..count..), size=5) +
+        theme_grey(base_size = 18)
+```
+
+```{r echo=FALSE}
+train_y$Type <- as.factor(train_y$Type)
+ggplot(train_y[(train_y$Type != "NaN"),], aes(x = Type, fill = Type)) +
+  geom_bar(stat='count') +
+  labs(x = 'What are the types of volcanoes in the images?') +
+        geom_label(stat='count',aes(label=..count..), size=5) +
+        theme_grey(base_size = 18)
+```
+
+
+```{r volplot_function, echo=FALSE, fig.height=5, fig.width=5}
+volplot <- function(data, obs){
+  im <- as.numeric(data[obs,])
+  m <- matrix(im, nrow = 110, byrow = TRUE)
+  image(m, col = grey((0:255)/255))
+}
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 1 Type: 3 Radius: 17.46 Number of Volcanoes: 1"}
+volplot(train_data, 1)
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 10 Type: 1 Radius: 22.02 Number Volcanoes: 1"}
+volplot(train_data, 10)
+```
+
+## METHODOLOGY
+Models we used:  
+### Lasso Regression  
+### ElasticNet  
+### Neural Network  
+Neural Network was used in the project for seeking better classfication results. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
+
+```{r echo=FALSE, out.width="250px"}
+knitr::include_graphics("000005.png")
+```
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{}             & \multicolumn{1}{c|}{\textbf{No}} & \multicolumn{1}{c|}{\textbf{Yes}} \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{No}}  & \multicolumn{1}{c|}{2270}        & \multicolumn{1}{c|}{88}           \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{30}          & \multicolumn{1}{c|}{346}          \\ \cline{1-3}
+\end{tabular}
+\end{center}
