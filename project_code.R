@@ -82,7 +82,7 @@ table(as.numeric(pred[,99] > 0.5), test.y[,1])
 #accuracy: 92.94% (lambda 0.001573354)
 train.x = as.matrix(train.x)
 train.y=as.matrix(train.y[,1])
-cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial")
+cv.out = cv.glmnet(x=train.x, y=train.y, nfolds = nrow(train.x), alpha = 1, family = "binomial")
 lam.seq = exp(seq(-6.5, -5, length=100))
 lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = lam.seq)
 pred = predict(lasmodel, newx=as.matrix(test.x), type = "response")
@@ -127,22 +127,36 @@ usepix = names(sortedresults[1:totalpix,])
 top_loc = match(usepix, rownames(vol_results))
 
 sel.pix = train.x[,top_loc]
+training_M = data.frame(train.y, sel.pix)
+colnames(training_M) = c("volcano",colnames(sel.pix))
 
-training = data.frame(train.y,sel.pix)
-colnames(training) = c("volcano",colnames(sel.pix))
+check = which(coef(lasmodel)!=0)
+las_pix = train.x[,check]
+training_las = data.frame(train.y,las_pix)
+colnames(training_las) = c("volcano",colnames(las_pix))
 
 test.x = as.matrix(test.x)
-test.pipx = test.x[,top_loc]
+test.las = test.x[,check]
+test.M = test.x[,top_loc]
 
 
-logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
+logmodel_las = glm(as.factor(volcano)~., data = training_las, family = "binomial")
+logmodel_M = glm(as.factor(volcano)~., data = training_M, family = "binomial")
 
-train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5) #0.9148571
-log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
+train.error_M = (predict(logmodel_M, data.frame(sel.pix), type = "response") > 0.5) #0.9148571
+train.error_LAS = (predict(logmodel_las, data.frame(las_pix), type = "response") > 0.5) #0.9562857
 
-table(log_pred,test.y) # accuracy = 0.892831
+log_pred_M = as.numeric(predict(logmodel_M, data.frame(test.M), type = "response") > 0.5)
+log_pred_las = as.numeric(predict(logmodel_las, data.frame(test.las), type = "response") > 0.5)
 
+table(log_pred_M,test.y) # accuracy = 0.89245
+table(log_pred_las,test.y) # accuracy = 0.9191661
 
+library(MLmetrics)
+library(pROC)
+roc_M = roc(log_pred_M,test.y) #0.8429
+roc_las = roc(log_pred_las,test.y) # 0.8672
+auc(roc_M)
 
 #LDA
 ldmodel = lda(train.x, as.factor(train.y))
