@@ -282,15 +282,19 @@ lam.seq = exp(seq(-6.5, -5, length=100))
 cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = lam.seq)
 lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = cv.out$lambda.min)
 pred = predict(lasmodel, newx=as.matrix(test_data), type = "response")
+pred_class = predict(lasmodel, newx=as.matrix(test_data), type = "class")
 ```
 Testing error:
 ```{r}
+auc(test_y[,1], pred)
 pred.cal = apply(pred, 2, predfunc)
 pred.cal
 table(as.numeric(pred > 0.5), test_y[,1])
+F1_Score(test_y[,1], as.numeric(pred > 0.5))
 ```
 Training error:
 ```{r}
+library(MLmetrics)
 pred_train = predict(lasmodel, newx=as.matrix(train_data),type = "response")
 pred.cal.train = apply(pred, 2, predfunc_train)
 pred.cal.train
@@ -409,6 +413,19 @@ xgpred1 = as.matrix(xgpred)
 xgpred.cal = apply(xgpred1, 2, predfunc)
 xgpred.cal
 table(as.numeric(xgpred1 > 0.5), test_y[,1])
+```
+
+```{r}
+load("xgmodel.RData")
+```
+
+```{r}
+xgpred = predict(xgb.fit.final, as.matrix(test_data))
+xgpred1 = as.matrix(xgpred)
+
+auc(test_y[,1], xgpred1)
+F1_Score(test_y[,1], as.numeric(xgpred1 > 0.5))
+
 
 ```
 
