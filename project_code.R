@@ -145,7 +145,7 @@ table(log_pred,test.y) # accuracy = 0.892831
 
 
 #LDA
-ldmodel = lda(train.x, train.y)
+ldmodel = lda(train.x, as.factor(train.y))
 
 #random forest
 rfmodel = randomForest(train.x, y=train.y[,1])
