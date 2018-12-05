@@ -1,52 +1,136 @@
 ---
-title: "STAT 432 Final Project"
-subtitle: "Detecting Volcanoes on Venus via Classification (Where are the Volcanoes?!!)"
+title: "Detecting Volcanoes on Venus via Classification (Where are the Volcanoes?!!)"
+subtitle: "STAT 432 Final Project"
 author: 
-- 'Team : Mamamia!'
+- 'Team Mamamia!'
 - "Di Ye (diye2), Hao Wang (haow2),Hannah Pu (chpu2)"
 date: "November 17, 2018"
 output:
   pdf_document:
-    toc: yes
+classoption: twocolumn
 ---
 
-# Final Report
+## INTRODUCTION
 
-## Introduction and literature review
+### Data Source Information
+The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
 
-### Data Source information:
 
-- The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database.
-- Kaggle. https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data
-
-### Data introduction:
-
-9734 images were captured by the spacecraft and converted to pixel (110x110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
+### Data Description
+9734 images were captured by the spacecraft and converted to pixels (110 x 110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
 The 9000+ images are separated to four datasets (file names : *train_images*, *train_labels*, *test_images*, and *test_labels*):
 
-#### Image dataset (*train_images* and *test_images*)
+#### Image Dataset (*train_images* and *test_images*)
 *Train_images* : 7000 images as train data with 12100 variables;  
 *Test_images* : 2734 images as test data with 12100 variables; 
-All the variables correspond to the pixel image, 110 pixel * 110 pixel = 12100.
+All the variables (V1 to V12100) correspond to the pixel image, 110 pixels * 110 pixels = 12100 pixels.
 
-#### Label dataset (*tain_labels* and *test_labels*)
-Both *train_labels* and *test_label* datasets include the following labels:   
-1. *Volcano?* : if in the image there are volcanoes (Main target), 1 (yes) or 0 (no)  
-(If Volcano? = 0, the following three categories would be "nan")  
-2. *Type* : 1= definitely a volcano,2 =probably, 3= possibly, 4= only a pit is visible   
-3. *Radius* : is the radius of the volcano in the center of the image, in pixels   
-4. *Number Volcanoes* : The number of volcanoes in the image  
-For this project, we will focus mainly on predicting whether each image has a volcanoe or not. In addition, if the classification prediction goes well, we will also construct model to predict the number of volcanoes in the images. 
+#### Label Dataset (*train_labels* and *test_labels*)
+A summary of the variables in both *train_labels* and *test_label* datasets is listed down below:   
+1. *Volcano?* : If in the image there exists at least one volcano, the label is 1 (Yes). Otherwise, the label is 0 (No). 
+(If Volcano? equals 0, the following three categories would be "NaN").
+2. *Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible   
+3. *Radius* : Is the radius of the volcano in the center of the image, in pixels?   
+4. *Number Volcanoes* : The number of volcanoes in the image.  
 
-### Scientific goal:
-
-We aim in constructing classification model to predict whether there exist a valcano through image.  
-
-We aim in constructing mainly classification model to predict whether there exist a valcano through image. If the classification model works well, we will continue to further doing analysis based on the images which we identify as containing at least one volcano to predict the number of volcanoes in the images.  
-
-### Literature review:
-
+### Literature Review
 In the Kaggle, the data analysis of the project is done in Python. People have already had vivid data visualization and exploratory data. Different methods have been used, such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. People have reached the 95% accuracy. 
+
+### Scientific Goal
+For this project, we will focus mainly on predicting whether each image has a volcano or not. In addition, if the classification prediction goes well, we will also construct models to predict the number of volcanoes in the images. We aim in constructing different classification models and choosing the best model to predict whether there exists a valcano in each image. Identifying valcano through IT technology would increase the efficency of space exploration and safty of the crews. 
+
+## EXPLORATORY DATA
+```{r include=FALSE}
+#################
+# load datasets #
+#################
+load("test_data.RData")
+load("train_data.Rdata")
+train_y <- read.csv("train_labels.csv", header = TRUE)
+test_y <- read.csv("test_labels.csv", header = TRUE)
+```
+
+The first 6 observations of *train_labels*
+```{r head_train_y, echo=FALSE}
+head(train_y)
+```
+
+The first 6 observations of *test_labels*
+```{r head_test_y, echo=FALSE}
+head(test_y)
+```
+
+After exploring the datasets, we found only labels have NaNs. We have set the those values to 0, an insignicant value in our dataset. 
+
+
+```{r echo=FALSE}
+library(ggplot2)
+train_y$Volcano. <- as.factor(train_y$Volcano.)
+ggplot(train_y, aes(x = Volcano., fill = Volcano.)) +
+  geom_bar(stat='count') +
+  labs(x = 'How many images have volcanoes?') +
+        geom_label(stat='count',aes(label=..count..), size=7) +
+        theme_grey(base_size = 18)
+```
+
+```{r echo=FALSE}
+train_y$Type <- as.factor(train_y$Type)
+ggplot(train_y[(train_y$Type != "NaN"),], aes(x = Type, fill = Type)) +
+  geom_bar(stat='count') +
+  labs(x = 'What are the types of volcanoes in the images?') +
+        geom_label(stat='count',aes(label=..count..), size=7) +
+        theme_grey(base_size = 18)
+```
+
+
+```{r volplot_function, echo=FALSE, fig.height=5, fig.width=5}
+volplot <- function(data, obs){
+  im <- as.numeric(data[obs,])
+  m <- matrix(im, nrow = 110, byrow = TRUE)
+  image(m, col = grey((0:255)/255))
+}
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 1 Type: 3 Radius: 17.46 Number of Volcanoes: 1"}
+volplot(train_data, 1)
+```
+
+```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs = 10 Type: 1 Radius: 22.02 Number Volcanoes: 1"}
+volplot(train_data, 10)
+```
+
+## METHODOLOGY
+Models we used:  
+### Lasso Regression  
+### ElasticNet  
+### Neural Network  
+Neural Network was used in the project for seeking better classfication result. The raw data train_images and test_images was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
+
+```{r echo=FALSE, out.width="250px"}
+knitr::include_graphics("000005.png")
+```
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{}             & \multicolumn{1}{c|}{\textbf{No}} & \multicolumn{1}{c|}{\textbf{Yes}} \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{No}}  & \multicolumn{1}{c|}{2270}        & \multicolumn{1}{c|}{88}           \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{30}          & \multicolumn{1}{c|}{346}          \\ \cline{1-3}
+\end{tabular}
+\end{center}
+
+### Code
+```{r}
+#################
+# load packages #
+#################
+library(keras)
+library(glmnet)
+library(lme4)
+library(doParallel)
+library(foreach)
+library(xgboost)
+```
 
 ```{r}
 #################
@@ -54,7 +138,6 @@ In the Kaggle, the data analysis of the project is done in Python. People have a
 #################
 load("test_data.RData")
 load("train_data.Rdata")
-
 train_y <- read.csv("train_labels.csv", header = TRUE)
 test_y <- read.csv("test_labels.csv", header = TRUE)
 
@@ -99,36 +182,32 @@ train_y[is.na(train_y$Radius), ] <- 0
 
 volplot <- function(data, obs){
   im <- as.numeric(data[obs,])
-  # im <- sapply(train_data[obs, ], as.numeric)
   m <- matrix(im, nrow = 110, byrow = TRUE)
   image(m, col = grey((0:255)/255))
 }
 ```
 
 ```{r}
-library(keras)
-```
+### Data Preparation for Neural Network
+train_data_num <- sapply(train_data, as.numeric)
+test_data_num <- sapply(test_data, as.numeric)
 
-```{r}
-## use 200 images for toy model
-train_images <- array(NA, c(2000, 110, 110))
-train_data_num <- sapply(train_data[1:2000,], as.numeric)
-for (i in 1:2000) {
+train_images <- array(NA, c(7000, 110, 110))
+for (i in 1:7000) {
   train_images[i,,] <- array_reshape(train_data_num[i,], c(110, 110))
 }
-train_images <- array_reshape(train_images, c(2000, 110, 110, 1))
+train_images <- array_reshape(train_images, c(7000, 110, 110, 1))
 train_images <- train_images / 255
 
-test_images <- array(NA, c(400, 110, 110))
-test_data_num <- sapply(test_data[1:400,], as.numeric)
-for (i in 1:400) {
+test_images <- array(NA, c(2734, 110, 110))
+for (i in 1:2734) {
   test_images[i,,] <- array_reshape(test_data_num[i,], c(110, 110))
 }
-test_images <- array_reshape(test_images, c(400, 110, 110, 1))
+test_images <- array_reshape(test_images, c(2734, 110, 110, 1))
 test_images <- test_images / 255
 
-train_y_volcano <- to_categorical(train_y$Volcano.[1:2000])
-test_y_volcano <- to_categorical(test_y$Volcano.[1:400])
+train_y_volcano <- to_categorical(train_y$Volcano.)
+test_y_volcano <- to_categorical(test_y$Volcano.)
 ```
 
 ```{r}
@@ -140,7 +219,7 @@ model <- keras_model_sequential() %>%
   layer_max_pooling_2d(pool_size = c(2, 2)) %>%
   # layer_dropout(rate = 0.3) %>% 
   layer_conv_2d(filters = 16, kernel_size = c(3, 3), activation = "relu") %>%
-  layer_flatten() %>% # flatten 3D to 1D
+  layer_flatten() %>%
   # layer_dense(units = 16, activation = "relu") %>%
   layer_dense(units = 2, activation = "softmax")
 
@@ -150,14 +229,197 @@ model %>% compile(
   metrics = c("accuracy")
 )
 
-model %>% fit(
+model_ret <- model %>% fit(
   train_images, train_y_volcano,
-  epochs = 30, batch_size=32,
+  epochs = 50, batch_size=32,
   validation_split = 0.2
 )
+plot(model_ret)
 
 results <- model %>% evaluate(test_images, test_y_volcano)
 results
-model %>% predict_classes(test_images)
+pred_results <- model %>% predict_classes(test_images)
+table(pred_results, test_y$Volcano.)
 ```
+
+<<<<<<< HEAD
+## Methods
+Models we used:  
+Lasso  
+ElasticNet  
+Logistic  
+Neural network
+
+### Evaluation metric  
+=======
+
+### Evaluation metric
+>>>>>>> 176a5d3a9b440ea2f87b55e05a069c046d9519db
+Our models were evaluated by calculating the classification error coded as following:
+```{r}
+predfunc= function(a){
+  mean(as.numeric(a > 0.5) == test_y[,1])*100
+}
+predfunc_train = function(a){
+  mean(as.numeric(a > 0.5) == train_y[,1])*100
+}
+```
+
+
+## Results and Discussion
+
+### Challenges encountered
+Our dataset is pretty large, and the number of variables (12100 variables) are larger than observations (2734 observations).
+
+### Results of model and analysis to predict whether there is volcanoe or not
+
+#### Lasso
+Using Lasso to predict, first tune with `cv.glmnet`, then use `lambda.min` to fit lasso model and do prediction on test data. The classification accuracy on test data is 92.4%. Training error was calculated to be 77.5%, therefore there seemes to be no overfitting.
+```{r}
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,1])
+lam.seq = exp(seq(-6.5, -5, length=100))
+cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = lam.seq)
+lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = cv.out$lambda.min)
+pred = predict(lasmodel, newx=as.matrix(test_data), type = "response")
+```
+Testing error:
+```{r}
+pred.cal = apply(pred, 2, predfunc)
+pred.cal
+table(as.numeric(pred > 0.5), test_y[,1])
+```
+Training error:
+```{r}
+pred_train = predict(lasmodel, newx=as.matrix(train_data),type = "response")
+pred.cal.train = apply(pred, 2, predfunc_train)
+pred.cal.train
+table(as.numeric(pred_train > 0.5), train_y[,1])
+```
+In total, 405 variables were selected by Lasso. Selected variables spread accross the 110*110 pixel images.
+```{r}
+mylasso.coef = predict(lasmodel, s = cv.out$lambda.min, type = "coefficients")
+sum(mylasso.coef != 0) - 1 
+var.sel = row.names(mylasso.coef)[nonzeroCoef(mylasso.coef)[-1]]
+var.sel
+```
+
+#### logistic regression (MarginalScreening)
+
+First, using marginal Screening to select the top 400 pixels (which gives the minimal prediction error). Then, using those 400 pixels to predict test data. The training error is 0.92. Prediction error is 0.89.
+
+Marginal Screening
+```{r}
+# library(lme4)
+# library(doParallel)
+# library(foreach)
+cl <- makeCluster(3)
+registerDoParallel(cl)
+
+pre = Sys.time()
+vol_results <- foreach(j = 1:ncol(train.x), .packages = 'lme4', .combine='rbind') %dopar% {
+  
+  pix = scale(train.x[,j])
+  fit.glm <- summary(glm(as.factor(train.y) ~ pix, family = "binomial"))
+  fit.glm$coefficients[2,4]
+}
+
+Sys.time() - pre
+
+stopCluster(cl)
+
+rownames(vol_results) = colnames(train.x)
+colnames(vol_results) = "glm.p value"
+
+#save(vol_results, file = "vol_result.RData")
+
+totalpix = 400
+sortedresults = as.matrix(vol_results[order(vol_results),])
+usepix = names(sortedresults[1:totalpix,])
+
+top_loc = match(usepix, rownames(vol_results))
+
+sel.pix = train.x[,top_loc]
+
+training = data.frame(train.y,sel.pix)
+colnames(training) = c("volcano",colnames(sel.pix))
+
+test.x = as.matrix(test_data)
+test.pipx = test.x[,top_loc]
+```
+
+
+Logistic model fit:
+
+```{r}
+logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
+```
+
+
+Training error:
+
+```{r}
+train.pred = predict(logmodel, data.frame(sel.pix), type = "response")
+pred.cal.train = apply(as.matrix(train.pred), 2, predfunc_train)
+pred.cal.train
+table(as.numeric(train.pred > 0.5), train_y[,1])
+```
+
+Test error:
+
+```{r}
+log_pred = predict(logmodel, data.frame(test.pipx), type = "response")
+pred.cal = apply(as.matrix(log_pred), 2, predfunc)
+pred.cal
+table(as.numeric(log_pred > 0.5), test_y[,1])
+```
+
+### xgboost
+Using xgboost, the accuracy is 93.7%.
+```{r}
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,1])
+
+
+params <- list(
+  eta = 0.1,
+  max_depth = 5, #7
+  min_child_weight =5,
+  subsample = 0.65,
+  colsample_bytree = 0.8,
+  silent = 1
+)
+xgb.fit.final <- xgboost(
+  params = params,
+  data = as.matrix(train.x),
+  label = train.y,
+  nrounds = 200,
+  objective = 'binary:logistic',
+  verbose = 0
+)
+```
+
+```{r}
+xgpred = predict(xgb.fit.final, as.matrix(test_data))
+
+```
+
+```{r}
+xgpred1 = as.matrix(xgpred)
+xgpred.cal = apply(xgpred1, 2, predfunc)
+xgpred.cal
+table(as.numeric(xgpred1 > 0.5), test_y[,1])
+
+```
+
+
+## References
+
+
+
+
+
+
+
+
 
