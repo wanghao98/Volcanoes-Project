@@ -118,7 +118,7 @@ stopCluster(cl)
 rownames(vol_results) = colnames(train.x)
 colnames(vol_results) = "glm.p value"
 
-save(vol_results, file = "vol_result.RData")
+#save(vol_results, file = "vol_result.RData")
 
 totalpix = 400
 sortedresults = as.matrix(vol_results[order(vol_results),])
@@ -130,11 +130,15 @@ sel.pix = train.x[,top_loc]
 
 las.pix = train.x[,las]
 
+
 training = data.frame(train.y,sel.pix)
 colnames(training) = c("volcano",colnames(sel.pix))
 
 test.x = as.matrix(test.x)
+
 test.pip_glm = test.x[,top_loc]
+test.pipx = test.x[,top_loc]
+
 
 
 logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
