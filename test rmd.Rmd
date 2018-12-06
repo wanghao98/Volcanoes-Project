@@ -187,11 +187,13 @@ ggplot(train_y[(train_y$Number.Volcanoes != "NaN"),], aes(x = Number.Volcanoes, 
 
 ### Lasso Regression  
 
-To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by ploting cross-validation error, which gives us the interval (-6.5, -5). Afterthat, we did the model selection by using cv.glmnet and use the "lambda.min" as final tuning parameter, which gives us 470 selected pixels. The prediction using those 470 pixels yielded a good start, a high prediction accuracy, for our following analysis. 
+To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by ploting cross-validation error Afterthat, we did the model selection by using cv.glmnet and use the "lambda.min" as final tuning parameter.  
+
+We ran two Lasso Regression. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error plot, we have to intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using thos pixels yielded a good start, a high prediction accuracy, for our following analysis.
 
 ### Logistic Regression
 
-Before applying logistic regression, we applied tow variable selection methods to reduce dimension. 400 pixels were selected by using Marginal Screening and 470 pixels were selected by using above Lasso Regression. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their F1 score and AUC. 
+Two Logistic Regression were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction. 
 
 ### Neural Network  
 
@@ -265,19 +267,33 @@ Table : Test dataset prediction result
 
 #### Shrinking method (Lasso)
 
-By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels and apply those to lasso and logistic regression respectively.
+By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels for classification and apply those to lasso and logistic regression respectively.
 
 #### Marginal Screening
 
-To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels. The reason why we select top 400 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction error. 
+To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels for classification and 250 for poisson prediction. The reason why we select top 400 and 250 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction accuracy. 
 
 #### Variable selection methods comparison
 
 We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
 
-By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
+By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
 
-By applying those two different selection methods, we found the accuracy of Lasso selection is higher. Therefore, we may conclude that lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. 
+By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
+
+![The Marginal Screening index for classification](./M_C.png)
+
+![The Lasso index for classification](./Lasso_C.png)
+
+![The Marginal Screening index for Poisson prediction](./M_p.png)
+
+![The Lasso index for Poisson prediction](./lasso_P.png)
+
+Hence, for classification, lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
+
+Overall, we might conclude the variable selection criteria is how much information the index can tell us without overfitting model.
+
+
 
 ## IV. RESULT & CONCLUSION
 
