@@ -104,6 +104,13 @@ head(test_y)
 
 After exploring the datasets, we found only labels have NaNs. We have set the those values to 0, an insignicant value in our dataset. 
 
+```{r include=FALSE}
+test_y[is.na(test_y$Type), ] <- 0
+test_y[is.na(test_y$Radius), ] <- 0
+train_y[is.na(train_y$Type), ] <- 0
+train_y[is.na(train_y$Radius), ] <- 0
+```
+
 ### Data Visualization
 
 6 observations are picked to demonstrate how the images got labeled. Figure 1 - 4 show how well the volcanoes can be seen from the images (*Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible). Figure 5 contains 2 volcanoes, and Figure 6 contains no volcano at all. We can tell from the images that a bright white dot indicates a potential volcano, while the white dot might not be clear enough to see in the image, which means that it is hard to identify whether there is a volcano or not.
@@ -166,6 +173,16 @@ ggplot(train_y[(train_y$Type != "no volcano"),], aes(x = Type, fill = Type)) +
         theme(legend.position="bottom")
 ```
 
+```{r echo=FALSE, fig.height=3, fig.width=3, fig.cap="How clealy can we identify the volcanoes?"}
+train_y$Number.Volcanoes <- as.factor(train_y$Number.Volcanoes)
+# levels(train_y$Type) <- c("definitely a volcano", "probably", "possibly", "only a pit is visible", "no volcano")
+ggplot(train_y[(train_y$Number.Volcanoes != "NaN"),], aes(x = Number.Volcanoes, fill = Number.Volcanoes)) +
+  geom_bar(stat='count') +
+  labs(x = 'How many volcanoes in each image?') +
+        geom_label(stat='count',aes(label=..count..), size=2) +
+        theme_grey(base_size = 8) +
+        theme(legend.position="bottom")
+```
 ## III. METHODOLOGY
 
 ### Lasso Regression  
@@ -182,6 +199,12 @@ Neural Network was used in the project for seeking better classfication results.
 
 Two neural network models were run in this project. Figure 9 shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. Figure 10 shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
+
+
+```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify whether an image contains volcanoes", fig.pos='H'}
+knitr::include_graphics("neural_network.png")
+```
+
 \begin{center}
 \begin{tabular}{cccll}
 \cline{1-3}
@@ -191,22 +214,52 @@ Two neural network models were run in this project. Figure 9 shows the result of
 \end{tabular}
 \end{center}
 
-```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify whether an image contains volcanoes", fig.pos='H'}
-knitr::include_graphics("neural_network.png")
+The loss function and accuracy:
+```{r echo=FALSE}
+load("neural_network.RData")
+acc_loss
 ```
 
 ```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify how many volcanoes in each image", fig.pos='H'}
 knitr::include_graphics("neural_network_number.png")
 ```
 
+
+
+The loss function and accuracy:
+```{r echo=FALSE}
+load("neural_network_number.RData")
+acc_loss_number
+```
+
 ```{r eval=FALSE, include=FALSE}
 library(MLmetrics)
 library(pROC)
-load("neural_network.RData")
 table(pred_results_class, test_y$Volcano.)
 F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
 auc(test_y[,1], pred_results[,2])
+
+table(pred_results_number_class, test_y$Number.Volcanoes)
+F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NULL)
 ```
+\begin{center}
+Table : Test dataset prediction result
+\end{center}
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{} & \multicolumn{1}{c|}{\textbf{0}} & \multicolumn{1}{c|}{\textbf{1}} & \multicolumn{1}{c|}{\textbf{2}} & \multicolumn{1}{c|}{\textbf{3}} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{0}}  & \multicolumn{1}{c|}{2272} & \multicolumn{1}{c|}{67} & \multicolumn{1}{c|}{15} & \multicolumn{1}{c|}{2}\\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{1}} & \multicolumn{1}{c|}{23} & \multicolumn{1}{c|}{266} & \multicolumn{1}{c|}{44} & \multicolumn{1}{c|}{7} \\ 
+\cline{1-3} 
+\multicolumn{1}{|c|}{\textbf{2}} & \multicolumn{1}{c|}{5} & \multicolumn{1}{c|}{26} & \multicolumn{1}{c|}{4} & \multicolumn{1}{c|}{3} \\ 
+\cline{1-3}
+
+\end{tabular}
+\end{center}
 
 ### Variable selection methods
 
