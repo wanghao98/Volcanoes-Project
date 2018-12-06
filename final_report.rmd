@@ -378,6 +378,29 @@ pred.cal
 table(as.numeric(log_pred > 0.5), test_y[,1])
 ```
 
+### random forest
+```{r}
+#random forest
+library(randomForest)
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,1])
+train.y = as.factor(train.y)
+rfmodel = randomForest(train.x, y=train.y, nodesize = 70, mtry = 80,ntree = 200,  importance=TRUE)
+```
+
+```{r}
+rfpred_res = predict(rfmodel, as.matrix(test_data))
+table(rfpred_res, test_y[,1])
+rfpred = predict(rfmodel, as.matrix(test_data), type="prob")
+rfpred1 = rfpred[,2]
+
+auc(test_y[,1], rfpred1)
+F1_Score(test_y[,1], rfpred_res)
+
+varImpPlot(rfmodel)
+```
+
+
 ### xgboost
 Using xgboost, the accuracy is 93.7%.
 ```{r}
@@ -428,6 +451,8 @@ F1_Score(test_y[,1], as.numeric(xgpred1 > 0.5))
 
 
 ```
+
+
 
 predict number of colvanoes
 ```{r}
