@@ -50,6 +50,10 @@ usepix = names(sortedresults[1:totalpix,])
 
 top_loc = match(usepix, rownames(glm_num))
 
+pic_M = matrix(0,110,110)
+pic_M[top_loc] = 1
+image(pic_M,col = grey(12100:0/12100),main = "Marginal Screening index for Poisson prediction")
+
 sel.pix = train.x[,top_loc]
 
 training = data.frame(train_num,sel.pix)
@@ -60,7 +64,7 @@ test.pipx = test.x[,top_loc]
 
 glm.num = glm(volcano_num~., data = training, family = "poisson")
 
-log_pred = predict(glm.num, data.frame(test.pipx), type = "response") # 0.003
+log_pred = predict(glm.num, data.frame(test.pipx), type = "response") # 0.5072927
 sqrt(mean((log_pred - test_num)^2))
 
 
@@ -74,7 +78,7 @@ test.las = test.x[,las_index]
 glm.las.num = glm(volcano_num~., data = training_las, family = "poisson")
 
 glm.las_pred = predict(glm.las.num, data.frame(test.las), type = "response") 
-sqrt(mean((glm.las_pred - test_num)^2)) #RMSE = 
+sqrt(mean((glm.las_pred - test_num)^2)) #RMSE = 0.6798163
 
 
 glm_result = list(glm.las.num, glm.num)
@@ -98,7 +102,11 @@ save(las_num, file = "las_num.RData")
 
 las_index = which(las_num$beta != 0)
 
-pred = predict(las_num, newx=as.matrix(test_data), type = "response") #RMSE = 0.01411258
+pic_las = matrix(0,110,110)
+pic_las[las_index] = 1
+image(pic_las,col = grey(12100:0/12100),main = "lasso index for Poisson prediction")
+
+pred = predict(las_num, newx=as.matrix(test_data), type = "response") #RMSE = 0.4216523
 pred
 sqrt(mean((pred - test_num)^2))
 

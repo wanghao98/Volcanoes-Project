@@ -279,7 +279,21 @@ We originally only applied Marginal Screening to logistic regression. But after 
 
 By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
 
-By applying those two different selection methods, we found the accuracy of Lasso selection is higher. Therefore, we may conclude that lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. 
+By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
+
+![The Marginal Screening index for classification](./M_C.png)
+
+![The Lasso index for classification](./Lasso_C.png)
+
+![The Marginal Screening index for Poisson prediction](./M_p.png)
+
+![The Lasso index for Poisson prediction](./lasso_P.png)
+
+Hence, for classification, lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
+
+Overall, we might conclude the variable selection criteria is how much information the index can tell us without overfitting model.
+
+
 
 ## IV. RESULT & CONCLUSION
 
