@@ -1,18 +1,57 @@
 ---
-title: "Detecting Volcanoes on Venus via Classification (Where are the Volcanoes?!!)"
-subtitle: "STAT 432 Final Project"
-author: 
-- 'Team Mamamia!'
-- "Di Ye (diye2), Hao Wang (haow2),Hannah Pu (chpu2)"
-date: "November 17, 2018"
-output:
-  pdf_document:
-classoption: twocolumn
+title: Detecting Volcanoes on Venus via Classification
+
+# Use letters for affiliations
+author:
+  - name: Team Mamamia!:Di Ye (diye2)
+    affiliation: 1
+  - name: Hao Wang (haow2)
+    affiliation: 1
+  - name: Hannah Pu (chpu2)
+    affiliation: 1
+address:
+  - code: 1
+    address: Department of Statistics, University of Illinois at Urbana-Champaign
+
+# Abstract
+abstract: |
+  Your abstract will be typeset here, and used by default a visually distinctive font.
+  An abstract should explain to the general reader the major contributions of the article. 
+
+# Optional: One or more keywords
+keywords:
+  - Image Classification
+  - LASSO Regression
+  - Neural Network
+
+# Paper size for the document, values of letterpaper and a4paper
+papersize: letter
+
+# Font size of the document, values of 9pt (default), 10pt, 11pt and 12pt
+fontsize: 11pt
+
+# Optional: Skip inserting final break between acknowledgements, default is false
+skip_final_break: true
+
+# Optional: Bibliography 
+bibliography: pinp
+
+# Customize footer, eg by referencing the vignette
+footer_contents: "STAT 432 Final Project"
+
+# Produce a pinp document
+output: pinp::pinp
+
+# Required: Vignette metadata for inclusion in a package.
+vignette: >
+  %\VignetteIndexEntry{YourPackage-vignetteentry}
+  %\VignetteKeywords{YourPackage, r, anotherkeyword}
+  %\VignettePackage{YourPackage}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
-# Final Report
+## I. INTRODUCTION   
 
-## INTRODUCTION  
 NASA spacecraft was launched off for a mission to Venus on May 4, 1989, the mission mapped surfaces of Venus and image recorded most 98% of Venus surface. The analysis of the images revealed that there are several volcanoes on Venus. This project aims to construct prediction model to identify whether a image contains volcanoes or not.
 
 
@@ -42,7 +81,8 @@ In Kaggle, there were 11 kernels regarding data analysis of this dataset, all us
 ### Scientific Goal
 For this project, we focus mainly on doing classification predition on whether each image has a volcano or not. In addition, if the classification prediction goes well, we will also construct models to predict the number of volcanoes in the images. We aim in constructing different classification models and choosing the best model to predict whether there exists a valcano in each image. Identifying valcanoe through IT technology would increase the efficency of space exploration and safty of the crews. 
 
-## EXPLORATORY DATA
+## II. EXPLORATORY DATA
+
 ```{r include=FALSE}
 #################
 # load datasets #
@@ -57,7 +97,7 @@ The first 6 observations of *train_labels*
 ```{r head_train_y, echo=FALSE}
 head(train_y)
 ```
-
+\newpage
 The first 6 observations of *test_labels*
 ```{r head_test_y, echo=FALSE}
 head(test_y)
@@ -87,7 +127,6 @@ par(mfrow = c(2, 2))
 volplot(train_data, 39)
 ```
 
-
 ```{r, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Obs 1 Type: 3 Radius: 17.46 Number of Volcanoes: 1", fig.align='center'}
 par(mfrow = c(2, 2))
 volplot(train_data, 1)
@@ -113,29 +152,30 @@ volplot(train_data, 2)
 \newpage
 ### Data Summary
 To facilitate the analysis process and explore the data, we have summarized the data. The `ggplot` has been used to visualize the training set labels. The first figure shows that only 1000 images in the training dataset have volcanoes. The second figure shows that within 1000 images that have volcanoes, how clearly we can identify the volcanoes. 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=3}
 library(ggplot2)
 train_y$Volcano. <- as.factor(train_y$Volcano.)
 levels(train_y$Volcano.) <- c("No", "Yes")
 ggplot(train_y, aes(x = Volcano., fill = Volcano.)) +
   geom_bar(stat='count') +
   labs(x = 'How many images have volcanoes?') +
-        geom_label(stat='count',aes(label=..count..), size=5) +
-        theme_grey(base_size = 18)
+        geom_label(stat='count',aes(label=..count..), size=2) +
+        theme_grey(base_size = 8) +
+        theme(legend.position="bottom")
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.height=3, fig.width=3}
 train_y$Type <- as.factor(train_y$Type)
 levels(train_y$Type) <- c("definitely a volcano", "probably", "possibly", "only a pit is visible", "no volcano")
 ggplot(train_y[(train_y$Type != "no volcano"),], aes(x = Type, fill = Type)) +
   geom_bar(stat='count') +
   labs(x = 'How clearly can we identify the volcanoes?') +
-        geom_label(stat='count',aes(label=..count..), size=5) +
-        theme_grey(base_size = 18)
+        geom_label(stat='count',aes(label=..count..), size=2) +
+        theme_grey(base_size = 8) +
+        theme(legend.position="bottom")
 ```
 
-## METHODOLOGY
-
+## III. METHODOLOGY
 
 Models we used:
 
@@ -146,13 +186,6 @@ To apply Lasso Regression, we first selected reasonable interval for tuning para
 ### Logistic Regression
 
 Before applying logistic regression, we applied tow variable selection methods to reduce dimension. 400 pixels were selected by using Marginal Screening and 470 pixels were selected by using above Lasso Regression. Then, we applyed logistic regression on those 400 and 470 pixels repectively. We then recorded their F1 score and AUC. 
-
-Models we used:  
-
-### Lasso Regression  
-
-### ElasticNet  
-
 
 ### Neural Network  
 
@@ -171,8 +204,26 @@ F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
 auc(test_y[,1], pred_results[,2])
 ```
 
+Variable selection methods we used:
 
-## RESULT AND CONCLUSION
+### Shrinking method (Lasso):
+
+By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels and apply those to lasso and logistic regression respectively.
+
+### Marginal Screening:
+
+To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels. The reason why we select top 400 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction error. 
+
+### Variable selection methods comparison:
+
+We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
+
+By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
+
+By applying those two different selection methods, we found the accuracy of Lasso selection is higher. Therefore, we may conclude that lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the egdes. 
+
+## IV. RESULT & CONCLUSION
+
 
 Using 
 
@@ -209,25 +260,4 @@ Table : Test dataset prediction result
 \end{tabular}
 \end{center}
 
-
-Variable selection methods we used:
-
-### Shrinking method (Lasso):
-
-By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels and apply those to lasso and logistic regression respectively.
-
-### Marginal Screening:
-
-To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels. The reason why we select top 400 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction error. 
-
-### Variable selection methods comparison:
-
-We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
-
-By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
-
-By applying those two different selection methods, we found the accuracy of Lasso selection is higher. Therefore, we may conclude that lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the egdes. 
-
-
-RESULTS & DISCUSSION
 
