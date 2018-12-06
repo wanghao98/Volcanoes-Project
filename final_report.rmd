@@ -454,7 +454,7 @@ xgb.fit.final.num <- xgboost(
 )
 ```
 
-RMSE = 0.0601
+The RMSE = 0.0601
 ```{r}
 xgpred = predict(xgb.fit.final, as.matrix(test_data))
 sqrt(mean(xgpred - test_y[,4])^2)
