@@ -429,6 +429,41 @@ F1_Score(test_y[,1], as.numeric(xgpred1 > 0.5))
 
 ```
 
+predict number of colvanoes
+```{r}
+train.x = as.matrix(train_data)
+train.y=as.matrix(train_y[,4])
+test.y=as.matrix(test_y[,4])
+
+
+params <- list(
+  eta = 0.1,
+  max_depth = 5, #7
+  min_child_weight =5,
+  subsample = 0.65,
+  colsample_bytree = 0.8,
+  silent = 1
+)
+xgb.fit.final.num <- xgboost(
+  params = params,
+  data = as.matrix(train.x),
+  label = train.y,
+  nrounds = 200,
+  objective='count:poisson',
+  verbose = 0
+)
+```
+
+RMSE = 0.0601
+```{r}
+xgpred = predict(xgb.fit.final, as.matrix(test_data))
+sqrt(mean(xgpred - test_y[,4])^2)
+
+
+sum(xgpred)
+sum(test_y[,4])
+```
+
 
 ## References
 
