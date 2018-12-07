@@ -378,29 +378,6 @@ pred.cal
 table(as.numeric(log_pred > 0.5), test_y[,1])
 ```
 
-### random forest
-```{r}
-#random forest
-library(randomForest)
-train.x = as.matrix(train_data)
-train.y=as.matrix(train_y[,1])
-train.y = as.factor(train.y)
-rfmodel = randomForest(train.x, y=train.y, nodesize = 70, mtry = 80,ntree = 200,  importance=TRUE)
-```
-
-```{r}
-rfpred_res = predict(rfmodel, as.matrix(test_data))
-table(rfpred_res, test_y[,1])
-rfpred = predict(rfmodel, as.matrix(test_data), type="prob")
-rfpred1 = rfpred[,2]
-
-auc(test_y[,1], rfpred1)
-F1_Score(test_y[,1], rfpred_res)
-
-varImpPlot(rfmodel)
-```
-
-
 ### xgboost
 Using xgboost, the accuracy is 93.7%.
 ```{r}
@@ -450,43 +427,6 @@ auc(test_y[,1], xgpred1)
 F1_Score(test_y[,1], as.numeric(xgpred1 > 0.5))
 
 
-```
-
-
-
-predict number of colvanoes
-```{r}
-train.x = as.matrix(train_data)
-train.y=as.matrix(train_y[,4])
-test.y=as.matrix(test_y[,4])
-
-
-params <- list(
-  eta = 0.1,
-  max_depth = 5, #7
-  min_child_weight =5,
-  subsample = 0.65,
-  colsample_bytree = 0.8,
-  silent = 1
-)
-xgb.fit.final.num <- xgboost(
-  params = params,
-  data = as.matrix(train.x),
-  label = train.y,
-  nrounds = 200,
-  objective='count:poisson',
-  verbose = 0
-)
-```
-
-The RMSE = 0.0601
-```{r}
-xgpred = predict(xgb.fit.final, as.matrix(test_data))
-sqrt(mean(xgpred - test_y[,4])^2)
-
-
-sum(xgpred)
-sum(test_y[,4])
 ```
 
 

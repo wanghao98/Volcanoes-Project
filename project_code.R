@@ -118,7 +118,8 @@ stopCluster(cl)
 rownames(vol_results) = colnames(train.x)
 colnames(vol_results) = "glm.p value"
 
-save(vol_results, file = "vol_result.RData")
+#save(vol_results, file = "vol_result.RData")
+#load("vol_result.RData")
 
 totalpix = 400
 sortedresults = as.matrix(vol_results[order(vol_results),])
@@ -126,13 +127,23 @@ usepix = names(sortedresults[1:totalpix,])
 
 top_loc = match(usepix, rownames(vol_results))
 
+pic_m_c = matrix(0,110,110)
+pic_m_c[top_loc] = 1
+image(pic_m_c,col = grey(12100:0/12100),main = "Marginal Screening index for classficiation")
+
 sel.pix = train.x[,top_loc]
+
+las.pix = train.x[,las]
+
 
 training = data.frame(train.y,sel.pix)
 colnames(training) = c("volcano",colnames(sel.pix))
 
 test.x = as.matrix(test.x)
+
+test.pip_glm = test.x[,top_loc]
 test.pipx = test.x[,top_loc]
+
 
 
 logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
@@ -142,6 +153,15 @@ log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
 
 table(log_pred,test.y) # accuracy = 0.892831
 
+
+
+
+load("lassomodel.RData")
+
+las_cla_index = which(lasmodel$beta!=0)
+pic_las_c = matrix(0,110,110)
+pic_las_c[las_cla_index] = 1
+image(pic_las_c,col = grey(12100:0/12100),main = "Lasso index for classification")
 
 
 #LDA
