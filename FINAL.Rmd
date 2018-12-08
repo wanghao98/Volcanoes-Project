@@ -383,8 +383,10 @@ Table 4: Classification results using neural network for identifying the number 
 
 
 \newpage
+
+\newpage
 ## V. APPENDIX
-```{r echo = FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 library(knitr)
 def.chunk.hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
