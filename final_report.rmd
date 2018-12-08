@@ -277,19 +277,26 @@ Our dataset is pretty large, and the number of variables (12100 variables) are l
 ### Kmeans
 
 ```{r}
-train_data_sub = train_data[1:1000,]
+train_data_sub = train_data
 km = kmeans(train_data_sub, centers = 2, nstart = 20)
-
 ```
 
 ```{r}
-save(km, file="kmeans1-1000.RData")
+save(km, file="kmeans.RData")
 ```
 
 
 ```{r}
-table(km$cluster, train_y[1:1000,1])
+table(km$cluster, train_y[,1])
 ```
+
+# h cluster
+```{r}
+train_data_sub = train_data
+hc <- hclust(dist(train_data, method = "average")
+```
+
+
 
 ### LDA
 
@@ -310,6 +317,12 @@ F1_Score(test_y[,1], Ytest.pred$class)
 
 ```{r}
 load("ldamodel.RData")
+```
+#### qda
+```{r}
+train_data_sub = train_data
+qda.model=qda(train_data_sub,train_y[,1])
+
 ```
 
 
