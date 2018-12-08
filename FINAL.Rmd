@@ -193,13 +193,13 @@ ggplot(train_y[(train_y$Number.Volcanoes != "0"),], aes(x = Number.Volcanoes, fi
 
 ### Lasso Regression  
 
-To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
+To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
 
-We ran two Lasso Regression. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy, for our following analysis.
+We ran two Lasso Regressions. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy, for our following analysis.
 
 ### Logistic Regression
 
-Two Logistic Regression were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction.  
+Two Logistic Regressions were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction.  
 
 ### Neural Network  
 
@@ -281,7 +281,7 @@ F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NU
 
 #### Shrinking method (Lasso)
 
-By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important one left. With the tuning parameter $\lambda$'s interval we selected by examing the cv plot, we selected 470 important pixels for classification and apply those to lasso and logistic regression respectively.
+By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important ones left. With the tuning parameter $\lambda$'s interval we selected by examing the cross validation result, we selected 470 important pixels for classification, 250 pixels for Poisson prediction, and apply those to lasso and logistic regression respectively.
 
 #### Marginal Screening
 
@@ -313,7 +313,7 @@ knitr::include_graphics("rfimport.png")
 
 Hence, for classification, lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
 
-Overall, we might conclude the variable selection criteria is how much information the index can tell us without overfitting model.
+Overall, we could conclude the variable selection criteria for this project is how much information the index can tell us without overfitting model.
 
 
 ## IV. CONCLUSION & DISCUSSION  
