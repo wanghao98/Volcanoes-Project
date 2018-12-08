@@ -15,13 +15,14 @@ address:
 
 # Abstract
 abstract: |
-  LASSO Regression, logistic regression, neural network, random forest, and xgboost have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not. The analysis of the images revealed that there are several volcanoes on Venus. Neural network has the best performance to identify whether the images have volcanoes in this project for image classification with an area under the curve 0.9629 and a high F-1 score 0.9747. The comparison between models is also included.
+  LASSO Regression, logistic regression, neural network, random forest, and xgboost have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not, and if there is any, how many volcanoes are there. The analysis of the images revealed that there are several volcanoes on Venus. Neural network has the best performance to identify whether the images have volcanoes in this project for image classification with an area under the curve 0.9629 and a high F-1 score 0.9747. The comparison between models is also included.
 
 # Optional: One or more keywords
 keywords:
   - Image Classification
   - LASSO Regression
   - Logistic Regression
+  - Marginal Screening
   - Neural Network
   - Random Forest
   - Xgboost
@@ -54,7 +55,7 @@ vignette: >
 
 ## I. INTRODUCTION   
 
-It is well known that Venus is the closest planet to Earth. However, the surface of Venus is obscured by layers of thick cloud cover. It was until NASA's Magellan spacecraft was launched off for a mission to Venus on May 4, 1989 that the first detailed information about the surface of Venus was revealed. The mission mapped surfaces of Venus and image recorded most 98% of Venus surface. Dr. King in his article *Volcanoes on Venus* has mentioned that "volcanic activity is the dominant process for shaping the landscape of Venus, with over 90% of the planet's surface being covered by lava flows and shield volcanoes". Based on the images of volcanoes on Venus, we aim to construct prediction model to identify whether an image contains volcanoes or not. **Figure 1** is a simulated color image of the surface of Venus created by NASA using radar topography data acquired by the Magellan spacecraft.
+It is well known that Venus is the closest planet to Earth. However, the surface of Venus is obscured by layers of thick cloud cover. It was until NASA's Magellan spacecraft was launched off for a mission to Venus on May 4, 1989 that the first detailed information about the surface of Venus was revealed. The mission mapped surfaces of Venus and image recorded most 98% of Venus surface. Dr. King in his article *Volcanoes on Venus* has mentioned that "volcanic activity is the dominant process for shaping the landscape of Venus, with over 90% of the planet's surface being covered by lava flows and shield volcanoes". Based on the images of volcanoes on Venus, we aim to construct prediction model to identify whether an image contains volcanoes or not, and how many volcanoes are there. **Figure 1** is a simulated color image of the surface of Venus created by NASA using radar topography data acquired by the Magellan spacecraft.
 
 ```{r echo=FALSE, out.width="250px", fig.cap="Volcanoes on Venus", fig.pos='H'}
 knitr::include_graphics("images/venus-volcanoes-landscape.jpg")
@@ -63,7 +64,7 @@ knitr::include_graphics("images/venus-volcanoes-landscape.jpg")
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
 
 ### Data Description
-9734 images were captured by the NASA's Magellan spacecraft in the 1990s and converted to pixels (110 x 110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
+9734 images were captured by the NASA's Magellan spacecraft in the 1990s and converted to pixels (110 x 110, from 0 to 255), where each image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
 The 9000+ images are separated to four datasets (file names : *train_images*, *train_labels*, *test_images*, and *test_labels*):
 
 #### Image Dataset (*train_images* and *test_images*)
@@ -118,7 +119,7 @@ train_y[is.na(train_y$Radius), ] <- 0
 
 ### Data Visualization
 
-6 observations are picked to demonstrate how the images got labeled. *Figure 1 - 4* show how well the volcanoes can be seen from the images (*Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible). *Figure 5* contains 2 volcanoes, and Figure 6 contains no volcano at all. We can tell from the images that a bright white dot indicates a potential volcano, while the white dot might not be clear enough to see in the image, which means that it is hard to identify whether there is a volcano or not.
+6 observations are picked to demonstrate how the images got labeled. **Figure 2 - 5** show how well the volcanoes can be seen from the images (*Type* : 1 = definitely a volcano,2 = probably, 3 = possibly, 4 = only a pit is visible). **Figure 6** contains 2 volcanoes, and Figure 6 contains no volcano at all. We can tell from the images that a bright white dot indicates a potential volcano, while the white dot might not be clear enough to see in the image, which means that it is hard to identify whether there is a volcano or not.
 
 ```{r volplot_function, echo=FALSE, fig.height=5, fig.width=5}
 volplot <- function(data, obs){
@@ -154,7 +155,7 @@ volplot(train_data, 2)
 
 ### Data Summary
 
-To facilitate the analysis process and explore the data, we have summarized the data. The `ggplot` has been used to visualize the training set labels. *Figure 7* shows that only 1000 images in the training dataset have volcanoes. *Figure 8* shows that within 1000 images that have volcanoes, how clearly we can identify the volcanoes. *Figure 9* shows how many volcanoes there are in each image. The number of volcanoes ranges from 0 to 5.
+To facilitate the analysis process and explore the data, we have summarized the data. The `ggplot` has been used to visualize the training set labels. **Figure 8** shows that only 1000 images in the training dataset have volcanoes. **Figure 9** shows that within 1000 images that have volcanoes, how clearly we can identify the volcanoes. **Figure 10** shows how many volcanoes there are in each image. The number of volcanoes ranges from 0 to 5.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=3, fig.cap="How many images have volcanoes?", fig.pos='H'}
 library(ggplot2)
@@ -192,9 +193,9 @@ ggplot(train_y[(train_y$Number.Volcanoes != "0"),], aes(x = Number.Volcanoes, fi
 
 ### Lasso Regression  
 
-To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by ploting cross-validation error Afterthat, we did the model selection by using cv.glmnet and use the "lambda.min" as final tuning parameter.  
+To apply Lasso Regression, we first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
 
-We ran two Lasso Regression. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error plot, we have to intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using thos pixels yielded a good start, a high prediction accuracy, for our following analysis.
+We ran two Lasso Regression. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy, for our following analysis.
 
 ### Logistic Regression
 
@@ -204,10 +205,10 @@ Two Logistic Regression were applied for classification and Poisson prediction. 
 
 Convolutional neural networks (CNNs) have been applied widely in image and video recognition and classification. CNNs are made up of neurons with learnable weights and bias. Therefore, CNNs were used in the project for seeking better classfication results. Some pooling layers were added into the models to progressively reduce the spatial size and the amount of parameters and computation in the network. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network models yielded efficient and satisfying classification results. The loss function is relatively low, indicating the models are good.
 
-Two neural network models were run in this project. *Figure 10* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 11* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
+Two neural network models were run in this project. **Figure 12** shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. **Figure 13** shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
 ### Random Forest  
-Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure*.
+Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in **Figure 11**. The yellow represents the important ones while black means those pixels are less meaningful for our prediction.
 
 ```{r echo=FALSE, out.width="250px", fig.cap="The Random Forest variable importance heatmap", fig.pos='H'}
 knitr::include_graphics("rf_heatmap.png")
@@ -290,7 +291,7 @@ To apply Marginal Screening, we use for loop to model each pixels with outcome b
 
 We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
 
-By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
+By looking at the pixels' index, **figure 14** and **figure 16**, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in **figure 15** and **figure 17**. 
 
 By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
 
@@ -359,11 +360,11 @@ Table : Test dataset prediction result on how many volcanoes there are in the im
 \cline{1-2}
 \multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{RMSE}} \\ 
 \cline{1-2}
-\multicolumn{1}{|c|}{\textbf{Neural Network}}  & \multicolumn{1}{c|}{} \\ 
+\multicolumn{1}{|c|}{\textbf{Logistic}}  & \multicolumn{1}{c|}{0.5073} \\ 
 \cline{1-2}
 \multicolumn{1}{|c|}{\textbf{xgboost}} & \multicolumn{1}{c|}{0.0613} \\ 
 \cline{1-2}
-\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{} \\ 
+\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{0.4613} \\ 
 \cline{1-2}
 \end{tabular}
 \end{center}
@@ -478,5 +479,17 @@ logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
 train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5)
 log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
 table(log_pred,test.y)
+```
+
+```{r eval=FALSE, include=TRUE, size='small'}
+# code for random forest variable important heatmap
+myimport = rfmodel$importance
+my_matrix = matrix(myimport[,4],110,110,byrow = T)
+
+library(RColorBrewer)
+pal <- colorRampPalette(brewer.pal(11, "RdYlGn"))(100)
+mycol <- c("black", "yellow") 
+pal <- colorRampPalette(mycol)(100)
+heatmap(my_matrix,Rowv = NA, Colv = NA,revC = T,col = pal)
 ```
 
