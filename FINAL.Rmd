@@ -81,10 +81,13 @@ A summary of the variables in both *train_labels* and *test_label* datasets is l
 4. *Number Volcanoes* : The number of volcanoes in the image.  
 
 ### Literature Review
-In Kaggle, there were 11 kernels regarding data analysis of this dataset, all using Python. The kernels included vivid data visualization and exploratory data. Most kernels focused on classification prediction on whether there are volcanoes or not. For this classification prediction, different methods have been used to construct prediction model, from simple models such as logistic regression, to advanced models such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. Accuracy of models ranged from 84.1% to 97%.
+Scientific papers regarding images obtained throught the Magellan mission were published, including Berl etc in 1989. In the 1989 paper, machine learning approach was introduced to facilitate in recognizing volcanoes from the images obtained in the mission. 
+It was mentioned that in image data, volcanoes could appear in any pixel location, therefore principal components analysis (PCA) and linear discriminant analysis (LDA) could be implemented in feature extraction. Various training algorithms such as quadratic classifiers, decision trees, linear discriminant analysis, and nearest neighbors were used and produced similar outcomes. 
+
+These venus datasets were uploaded in Kaggle and 11 kernels regarding this data analysis were produced, all using Python. The kernels included vivid data visualization and exploratory data. Most kernels focused on classification prediction on whether there are volcanoes or not. For this classification prediction, different methods have been used to construct prediction model, from simple models such as logistic regression, to advanced models such as Convolutional Neural Network (CNN) and VGG Neural Network for deep learning. Accuracy of models ranged from 84.1% to 97%.
 
 ### Scientific Goal
-For this project, we focus mainly on doing classification predition on whether each image has a volcano or not. In addition, if the classification prediction goes well, we will also construct models to predict the number of volcanoes in the images. We aim in constructing different classification models and choosing the best model to predict whether there exists a valcano in each image. Identifying valcanoe through IT technology would increase the efficency of space exploration and safty of the crews. 
+For this project, we focus mainly on doing classification predition on whether each image has a volcano or not.  We aim in constructing different classification models and choosing the best model to predict whether there exists a valcano in each image. Identifying valcanoe through IT technology would increase the efficency of space exploration and safty of the crews.  In addition, we also constructed a few models to perform prediction on the number of volcanoes in the images. 
 
 ## II. EXPLORATORY DATA
 
@@ -191,6 +194,28 @@ ggplot(train_y[(train_y$Number.Volcanoes != "0"),], aes(x = Number.Volcanoes, fi
 ```
 ## III. METHODOLOGY & ANALYSIS
 
+As the project data is image data, preprocessing was not neccessary to fit model. For the prediction of whether there is volcanoe or not, we constructed simple prediction models and advanced models, as discussed as following. For evaluation metric for these models, as references has indicated that uncertainty exists in the identification of volcanoes in the images. We used AUC (Area under the ROC, receiver operating characteristic) and F1 score. As AUC and F1 score provides overall performance measure of classifcation, it incorportates the uncertainty of the predictions.  For the prediction of how many volcanoes there is, root mean square error (RMSE) was used logistic, lasso, and xgboost and AUC was used for neural network. Models used for each kind of prediction are summarized as the following table.
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{Predict if have volcanoe}} & \multicolumn{1}{c|}{\textbf{Predict How many volcanoes}} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Neural Network}}  & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V}\\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{xgboost}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Random Forest}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{ } \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Logistic (Marginal Screening)}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Logistic (Lasso Selection)}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V} \\ 
+\cline{1-3}
+\end{tabular}
+\end{center}
+
 ### Lasso Regression  
 
 To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
@@ -252,6 +277,7 @@ knitr::include_graphics("rf_heatmap.png")
 
 As xgboost is nowadays a popular algorithm used in machine learning and Kaggle competitions, this algorithm was also used in this project to see its performance. Xgboost was implemented using the `xgboost` package. Tuning was performed by using `xgb.cv` function with nfold = 5, parameters that were tuned are eta (learning rate), max_depth (maximum depth of a tree), min_child_weight (minimum sum of instance weight needed in a child), subsample (subsample ratio of the training instance), colsample_bytree (subsample ratio of columns when constructing each tree). The tuning process took over 12 hours and was terminated before it finished all the combinations. The parameter combination with the lowest error was used. From the tuning process, parameterts used for this model are set as following: eta = 0.1,  max_depth = 5,  min_child_weight =5,  subsample = 0.65, colsample_bytree = 0.8, nrounds = 200,  objective = 'binary:logistic'. To model how many volcanoes there are, objective = 'count:possion' was used with same parameters as before.
 
+
 ### Variable selection methods
 
 #### Shrinking method (Lasso)
@@ -295,9 +321,7 @@ Overall, we could conclude the variable selection criteria for this project is h
 
 Our model prediction results are summarized in table below. 
 
-Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as 
-
-### Future Improvements
+Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers.  
 
 The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
 
