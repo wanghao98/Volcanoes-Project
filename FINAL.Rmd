@@ -207,7 +207,7 @@ Neural Network was used in the project for seeking better classfication results.
 Two neural network models were run in this project. *Figure 11* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 12* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
 ### Random Forest  
-Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure 10*.
+Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure 10*. The yellow represents the important ones while black means those pixels are less meaningful for our prediction.
 
 ```{r echo=FALSE, out.width="250px", fig.cap="The Random Forest variable importance heatmap", fig.pos='H'}
 knitr::include_graphics("rf_heatmap.png")
@@ -357,11 +357,11 @@ Table : Test dataset prediction result on how many volcanoes there are in the im
 \cline{1-2}
 \multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{RMSE}} \\ 
 \cline{1-2}
-\multicolumn{1}{|c|}{\textbf{Neural Network}}  & \multicolumn{1}{c|}{} \\ 
+\multicolumn{1}{|c|}{\textbf{Logistic}}  & \multicolumn{1}{c|}{0.5073} \\ 
 \cline{1-2}
 \multicolumn{1}{|c|}{\textbf{xgboost}} & \multicolumn{1}{c|}{0.0613} \\ 
 \cline{1-2}
-\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{} \\ 
+\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{0.4613} \\ 
 \cline{1-2}
 \end{tabular}
 \end{center}
@@ -476,5 +476,17 @@ logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
 train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5)
 log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
 table(log_pred,test.y)
+```
+
+```{r eval=FALSE, include=TRUE, size='small'}
+# code for random forest variable important heatmap
+myimport = rfmodel$importance
+my_matrix = matrix(myimport[,4],110,110,byrow = T)
+
+library(RColorBrewer)
+pal <- colorRampPalette(brewer.pal(11, "RdYlGn"))(100)
+mycol <- c("black", "yellow") 
+pal <- colorRampPalette(mycol)(100)
+heatmap(my_matrix,Rowv = NA, Colv = NA,revC = T,col = pal)
 ```
 
