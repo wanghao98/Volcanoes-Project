@@ -170,3 +170,14 @@ pic_las[las_index] = 1
 image(pic_las,col = grey(12100:0/12100),main = "lasso index for Poisson prediction")
 
 
+
+myimport = rfmodel$importance
+my_matrix = matrix(myimport[,4],110,110,byrow = T)
+
+library(RColorBrewer)
+pal <- colorRampPalette(brewer.pal(11, "RdYlGn"))(100)
+mycol <- c("black", "yellow") 
+pal <- colorRampPalette(mycol)(100)
+heatmap(my_matrix,Rowv = NA, Colv = NA,revC = T,col = pal)
+
+

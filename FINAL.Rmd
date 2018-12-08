@@ -431,3 +431,44 @@ xgb.fit.final <- xgboost(
 rfmodel = randomForest(train.x, y=train.y[,1], ntree = 200, mtry = 80, nodesize = 70)
 ```
 
+```{r eval=FALSE, include=TRUE, size='small'}
+#code for lasso
+cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial")
+lam.seq = exp(seq(-6.5, -5, length=100))
+lasmodel = glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial", lambda = lam.seq)
+
+#code for marginal screening
+
+cl <- makeCluster(3)
+registerDoParallel(cl)
+
+pre = Sys.time()
+vol_results <- foreach(j = 1:ncol(train.x), .packages = 'lme4', .combine='rbind') %dopar% {
+  
+  pix = scale(train.x[,j])
+  fit.glm <- summary(glm(as.factor(train.y) ~ pix, family = "binomial"))
+  fit.glm$coefficients[2,4]
+}
+
+Sys.time() - pre
+
+stopCluster(cl)
+#save(vol_results, file = "vol_result.RData")
+
+rownames(vol_results) = colnames(train.x)
+colnames(vol_results) = "glm.p value"
+
+totalpix = 400
+sortedresults = as.matrix(vol_results[order(vol_results),])
+usepix = names(sortedresults[1:totalpix,])
+
+top_pix = match(usepix, rownames(vol_results))
+
+
+#code for logistic regression:
+logmodel = glm(as.factor(volcano)~., data = training, family = "binomial")
+train.error = (predict(logmodel, data.frame(sel.pix), type = "response") > 0.5)
+log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
+table(log_pred,test.y)
+```
+
