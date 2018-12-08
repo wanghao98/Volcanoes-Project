@@ -202,7 +202,7 @@ Two Logistic Regression were applied for classification and Poisson prediction. 
 
 ### Neural Network  
 
-Neural Network was used in the project for seeking better classfication results. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
+Convolutional neural networks (CNNs) have been applied widely in image and video recognition and classification. CNNs are made up of neurons with learnable weights and bias. Therefore, CNNs were used in the project for seeking better classfication results. Some pooling layers were added into the models to progressively reduce the spatial size and the amount of parameters and computation in the network. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network models yielded efficient and satisfying classification results. The loss function is relatively low, indicating the models are good.
 
 Two neural network models were run in this project. *Figure 11* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 12* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
@@ -268,6 +268,9 @@ library(pROC)
 table(pred_results_class, test_y$Volcano.)
 F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
 auc(test_y[,1], pred_results[,2])
+plot(auc(test_y[,1], pred_results[,2]))
+ROC_nn <- roc(test_y[,1], pred_results[,2])
+plot(ROC_nn)
 
 table(pred_results_number_class, test_y$Number.Volcanoes)
 F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NULL)
@@ -316,8 +319,7 @@ Overall, we might conclude the variable selection criteria is how much informati
 
 Our model prediction results are summarized in table below. 
 
-Compared to structered data, the images used in this project are unstructered as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as 
-
+Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as 
 
 ### Future Improvements
 
