@@ -15,14 +15,16 @@ address:
 
 # Abstract
 abstract: |
-  LASSO Regression, logistic regression and neural network have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not. The analysis of the images revealed that there are several volcanoes on Venus. Neural network has the best performance to identify whether the images have volcanoes in this project for image classification with an area under the curve 0.9629 and a high F-1 score 0.9747. The comparison between models is also included.
+  LASSO Regression, logistic regression, neural network, random forest, and xgboost have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not. The analysis of the images revealed that there are several volcanoes on Venus. Neural network has the best performance to identify whether the images have volcanoes in this project for image classification with an area under the curve 0.9629 and a high F-1 score 0.9747. The comparison between models is also included.
 
 # Optional: One or more keywords
 keywords:
   - Image Classification
   - LASSO Regression
-  - Neural Network
   - Logistic Regression
+  - Neural Network
+  - Random Forest
+  - Xgboost
 
 # Paper size for the document, values of letterpaper and a4paper
 papersize: letter
@@ -103,7 +105,7 @@ The first 6 observations of *test_labels*
 head(test_y)
 ```
 
-After exploring the datasets, we found only labels have NaNs. We have set the those values to 0, an insignicant value in our dataset. 
+After exploring the datasets, we found only labels have NaNs. The NaNs in the label dataset occurs only when there is no Volcanoe in the image observation, then `Type`, `Radius` and `Number.Volcanoes` would be NaNs as there are no volcanoes. We have set the all these NaNs to 0.
 
 ```{r include=FALSE}
 test_y[is.na(test_y$Type), ] <- 0
@@ -184,7 +186,7 @@ ggplot(train_y[(train_y$Number.Volcanoes != "0"),], aes(x = Number.Volcanoes, fi
         theme_grey(base_size = 8) +
         theme(legend.position="bottom")
 ```
-## III. METHODOLOGY
+## III. METHODOLOGY & ANALYSIS
 
 ### Lasso Regression  
 
@@ -194,7 +196,7 @@ We ran two Lasso Regression. One for classification: whether there is a volcano 
 
 ### Logistic Regression
 
-Two Logistic Regression were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction. 
+Two Logistic Regression were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction.  
 
 ### Neural Network  
 
@@ -202,6 +204,12 @@ Neural Network was used in the project for seeking better classfication results.
 
 Two neural network models were run in this project. *Figure 10* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 11* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
+### Random Forest  
+Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure*.
+
+### Xgboost
+
+As xgboost is nowadays a popular algorithm used in machine learning and Kaggle competitions, this algorithm was also used in this project to see its performance. Xgboost was implemented using the `xgboost` package. Tuning was performed by using `xgb.cv` function with nfold = 5, parameters that were tuned are eta (learning rate), max_depth (maximum depth of a tree), min_child_weight (minimum sum of instance weight needed in a child), subsample (subsample ratio of the training instance), colsample_bytree (subsample ratio of columns when constructing each tree). The tuning process took over 12 hours and was terminated before it finished all the combinations. The parameter combination with the lowest error was used. From the tuning process, parameterts used for this model are set as following: eta = 0.1,  max_depth = 5,  min_child_weight =5,  subsample = 0.65, colsample_bytree = 0.8, nrounds = 200,  objective = 'binary:logistic'. To model how many volcanoes there are, objective = 'count:possion' was used with same parameters as before.
 
 
 ```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify whether an image contains volcanoes", fig.pos='H'}
@@ -259,8 +267,6 @@ table(pred_results_number_class, test_y$Number.Volcanoes)
 F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NULL)
 ```
 
-
-
 ### Variable selection methods
 
 #### Shrinking method (Lasso)
@@ -269,7 +275,7 @@ By applying Lasso Regression, we were able to shrink highly correlated pixels to
 
 #### Marginal Screening
 
-To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels for classification and 250 for poisson prediction. The reason why we select top 400 and 250 pixels is that, affter trying different number of top pixels, we found 400 pixels gave us highest prediction accuracy. 
+To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels for classification and 250 for poisson prediction. The reason why we select top 400 and 250 pixels is that, after trying different number of top pixels, we found 400 pixels gave us highest prediction accuracy. 
 
 #### Variable selection methods comparison
 
@@ -291,22 +297,28 @@ knitr::include_graphics("M_p.png")
 ```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for Poisson prediction", fig.pos='H'}
 knitr::include_graphics("lasso_P.png")
 ```
-
+```{r echo=FALSE, out.width="250px", fig.cap="Variable Importance in Random Forest", fig.pos='H'}
+knitr::include_graphics("rfimport.png")
+```
 
 Hence, for classification, lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
 
 Overall, we might conclude the variable selection criteria is how much information the index can tell us without overfitting model.
 
 
+## IV. CONCLUSION & DISCUSSION  
 
-## IV. RESULT & CONCLUSION
+Our model prediction results are summarized in table below. 
+
+Compared to structered data, the images used in this project are unstructered as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as 
 
 
-Using 
+### Future Improvements
 
+The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
 
 \begin{center}
-Table : Test dataset prediction result
+Table : Test dataset prediction result on whether there is volcanoe or not
 \end{center}
 
 \begin{center}
@@ -320,10 +332,31 @@ Table : Test dataset prediction result
 \cline{1-3}
 \multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{0.9347} & \multicolumn{1}{c|}{0.9574} \\ 
 \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Random Forest}} & \multicolumn{1}{c|}{0.9367} & \multicolumn{1}{c|}{0.9399} \\ 
+\cline{1-3}
 \multicolumn{1}{|c|}{\textbf{Logistic (Marginal Screening)}} & \multicolumn{1}{c|}{0.8429} & \multicolumn{1}{c|}{0.9386} \\ 
 \cline{1-3}
 \multicolumn{1}{|c|}{\textbf{Logistic (Lasso Selection)}} & \multicolumn{1}{c|}{0.8672} & \multicolumn{1}{c|}{0.9527} \\ 
 \cline{1-3}
+\end{tabular}
+\end{center}
+
+
+\begin{center}
+Table : Test dataset prediction result on how many volcanoes there are in the images
+\end{center}
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-2}
+\multicolumn{1}{|c|}{\textbf{Model}} & \multicolumn{1}{c|}{\textbf{RMSE}} \\ 
+\cline{1-2}
+\multicolumn{1}{|c|}{\textbf{Neural Network}}  & \multicolumn{1}{c|}{} \\ 
+\cline{1-2}
+\multicolumn{1}{|c|}{\textbf{xgboost}} & \multicolumn{1}{c|}{0.0613} \\ 
+\cline{1-2}
+\multicolumn{1}{|c|}{\textbf{Lasso}} & \multicolumn{1}{c|}{} \\ 
+\cline{1-2}
 \end{tabular}
 \end{center}
 
@@ -375,3 +408,26 @@ acc_loss_number
 save(pred_results_number, pred_results_number_class, acc_loss_number, file="neural_network_number.RData")
 # model %>% save_model_hdf5("my_neural_network_model.h5")
 ```
+
+```{r eval=FALSE, include=TRUE, size='small'}
+#code for xgboost
+params <- list(
+  eta = 0.1,
+  max_depth = 5, #7
+  min_child_weight =5,
+  subsample = 0.65,
+  colsample_bytree = 0.8,
+  silent = 1
+)
+xgb.fit.final <- xgboost(
+  params = params,
+  data = as.matrix(train.x),
+  label = train.y,
+  nrounds = 200,
+  objective = 'binary:logistic',
+  verbose = 0
+)
+#code for random forest
+rfmodel = randomForest(train.x, y=train.y[,1], ntree = 200, mtry = 80, nodesize = 70)
+```
+
