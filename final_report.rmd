@@ -11,6 +11,7 @@ classoption: twocolumn
 ---
 
 ## INTRODUCTION
+test
 
 ### Data Source Information
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
@@ -290,6 +291,26 @@ save(km, file="kmeans1-1000.RData")
 table(km$cluster, train_y[1:1000,1])
 ```
 
+### LDA
+
+```{r}
+library(MASS)
+train_data_sub = train_data
+lda.model=lda(train_data_sub,train_y[,1])
+```
+
+```{r}
+Ytest.pred=predict(lda.model, test_data)
+table(Ytest.pred$class, test_y[,1])
+
+auc(test_y[,1], Ytest.pred$posterior[,1])
+F1_Score(test_y[,1], Ytest.pred$class)
+
+```
+
+```{r}
+load("ldamodel.RData")
+```
 
 
 #### Lasso
