@@ -54,14 +54,16 @@ vignette: >
 
 ## I. INTRODUCTION   
 
-NASA spacecraft was launched off for a mission to Venus on May 4, 1989, the mission mapped surfaces of Venus and image recorded most 98% of Venus surface. The analysis of the images revealed that there are several volcanoes on Venus. This project aims to construct prediction model to identify whether a image contains volcanoes or not. 
+It is well known that Venus is the closest planet to Earth. However, the surface of Venus is obscured by layers of thick cloud cover. It was until NASA's Magellan spacecraft was launched off for a mission to Venus on May 4, 1989 that the first detailed information about the surface of Venus was revealed. The mission mapped surfaces of Venus and image recorded most 98% of Venus surface. Dr. King in his article *Volcanoes on Venus* has mentioned that "volcanic activity is the dominant process for shaping the landscape of Venus, with over 90% of the planet's surface being covered by lava flows and shield volcanoes". Based on the images of volcanoes on Venus, we aim to construct prediction model to identify whether an image contains volcanoes or not. **Figure 1** is a simulated color image of the surface of Venus created by NASA using radar topography data acquired by the Magellan spacecraft.
 
-
+```{r echo=FALSE, out.width="250px", fig.cap="Volcanoes on Venus", fig.pos='H'}
+knitr::include_graphics("images/venus-volcanoes-landscape.jpg")
+```
 ### Data Source Information
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
 
 ### Data Description
-9734 images were captured by the spacecraft and converted to pixels (110 x 110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
+9734 images were captured by the NASA's Magellan spacecraft in the 1990s and converted to pixels (110 x 110, from 0 to 255), where every image is one row of 12100 columns (all the 110 rows of 110 columns). Images can contain more than one volcanoes or maybe none.
 The 9000+ images are separated to four datasets (file names : *train_images*, *train_labels*, *test_images*, and *test_labels*):
 
 #### Image Dataset (*train_images* and *test_images*)
