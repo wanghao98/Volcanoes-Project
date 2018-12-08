@@ -57,7 +57,7 @@ vignette: >
 
 It is well known that Venus is the closest planet to Earth. However, the surface of Venus is obscured by layers of thick cloud cover. It was until NASA's Magellan spacecraft was launched off for a mission to Venus on May 4, 1989 that the first detailed information about the surface of Venus was revealed. The mission mapped surfaces of Venus and image recorded most 98% of Venus surface. Dr. King in his article *Volcanoes on Venus* has mentioned that "volcanic activity is the dominant process for shaping the landscape of Venus, with over 90% of the planet's surface being covered by lava flows and shield volcanoes". Based on the images of volcanoes on Venus, we aim to construct prediction model to identify whether an image contains volcanoes or not, and how many volcanoes are there. **Figure 1** is a simulated color image of the surface of Venus created by NASA using radar topography data acquired by the Magellan spacecraft.
 
-```{r echo=FALSE, out.width="250px", fig.cap="Volcanoes on Venus", fig.pos='H'}
+```{r echo=FALSE, out.width="250px", fig.cap="Volcanoes on Venus"}
 knitr::include_graphics("images/venus-volcanoes-landscape.jpg")
 ```
 ### Data Source Information
@@ -369,11 +369,17 @@ Table : Test dataset prediction result on how many volcanoes there are in the im
 \end{tabular}
 \end{center}
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(size = 's')
-```
 ## V. APPENDIX
-```{r eval=FALSE, include=TRUE, size='small'}
+```{r echo = FALSE}
+library(knitr)
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+```
+
+```{r eval=FALSE, include=TRUE, size='tiny', tidy=TRUE, tidy.opts=list(width.cutoff=50), class.source = c("numCode", "R", "numberLines")}
 ## number_volcano
 train_y_number <- to_categorical(train_y$Number.Volcanoes, num_classes = 6)
 test_y_number <- to_categorical(test_y$Number.Volcanoes, num_classes = 6)
@@ -418,7 +424,7 @@ save(pred_results_number, pred_results_number_class, acc_loss_number, file="neur
 # model %>% save_model_hdf5("my_neural_network_model.h5")
 ```
 
-```{r eval=FALSE, include=TRUE, size='small'}
+```{r eval=FALSE, include=TRUE, size='tiny', tidy=TRUE, tidy.opts=list(width.cutoff=50), class.source = c("numCode", "R", "numberLines")}
 #code for xgboost
 params <- list(
   eta = 0.1,
@@ -440,7 +446,7 @@ xgb.fit.final <- xgboost(
 rfmodel = randomForest(train.x, y=train.y[,1], ntree = 200, mtry = 80, nodesize = 70)
 ```
 
-```{r eval=FALSE, include=TRUE, size='small'}
+```{r eval=FALSE, include=TRUE, size='tiny', tidy=TRUE, tidy.opts=list(width.cutoff=50), class.source = c("numCode", "R", "numberLines")}
 #code for lasso
 cv.out = cv.glmnet(x=train.x, y=train.y, alpha = 1, family = "binomial")
 lam.seq = exp(seq(-6.5, -5, length=100))
@@ -481,7 +487,7 @@ log_pred = (predict(logmodel, data.frame(test.pipx), type = "response") > 0.5)
 table(log_pred,test.y)
 ```
 
-```{r eval=FALSE, include=TRUE, size='small'}
+```{r eval=FALSE, include=TRUE, size='tiny', tidy=TRUE, tidy.opts=list(width.cutoff=50), class.source = c("numCode", "R", "numberLines")}
 # code for random forest variable important heatmap
 myimport = rfmodel$importance
 my_matrix = matrix(myimport[,4],110,110,byrow = T)
