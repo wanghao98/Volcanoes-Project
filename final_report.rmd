@@ -11,6 +11,7 @@ classoption: twocolumn
 ---
 
 ## INTRODUCTION
+test
 
 ### Data Source Information
 The data was downloaded from Kaggle, which is originally from NASA's Magellan spacecraft database. (https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus/data)
@@ -276,20 +277,53 @@ Our dataset is pretty large, and the number of variables (12100 variables) are l
 ### Kmeans
 
 ```{r}
-train_data_sub = train_data[1:1000,]
+train_data_sub = train_data
 km = kmeans(train_data_sub, centers = 2, nstart = 20)
+```
+
+```{r}
+save(km, file="kmeans.RData")
+```
+
+
+```{r}
+table(km$cluster, train_y[,1])
+```
+
+# h cluster
+```{r}
+train_data_sub = train_data
+hc <- hclust(dist(train_data, method = "average")
+```
+
+
+
+### LDA
+
+```{r}
+library(MASS)
+train_data_sub = train_data
+lda.model=lda(train_data_sub,train_y[,1])
+```
+
+```{r}
+Ytest.pred=predict(lda.model, test_data)
+table(Ytest.pred$class, test_y[,1])
+
+auc(test_y[,1], Ytest.pred$posterior[,1])
+F1_Score(test_y[,1], Ytest.pred$class)
 
 ```
 
 ```{r}
-save(km, file="kmeans1-1000.RData")
+load("ldamodel.RData")
 ```
-
-
+#### qda
 ```{r}
-table(km$cluster, train_y[1:1000,1])
-```
+train_data_sub = train_data
+qda.model=qda(train_data_sub,train_y[,1])
 
+```
 
 
 #### Lasso
