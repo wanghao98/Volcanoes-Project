@@ -202,10 +202,10 @@ Two Logistic Regression were applied for classification and Poisson prediction. 
 
 Neural Network was used in the project for seeking better classfication results. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network used several convolutional dense layers for classification. The neural network model yielded a satisfying classification result.
 
-Two neural network models were run in this project. *Figure 10* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 11* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
+Two neural network models were run in this project. *Figure 11* shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. *Figure 12* shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
 ### Random Forest  
-Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure*.
+Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in *Figure 10*.
 
 ```{r echo=FALSE, out.width="250px", fig.cap="The Random Forest variable importance heatmap", fig.pos='H'}
 knitr::include_graphics("rf_heatmap.png")
@@ -285,7 +285,7 @@ To apply Marginal Screening, we use for loop to model each pixels with outcome b
 
 We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
 
-By looking at the pixels' index, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread. 
+By looking at the pixels' index, *figure 13* and *figure 15*, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in *figure 14* and *figure 16*. 
 
 By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
 
