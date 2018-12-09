@@ -26,6 +26,8 @@ keywords:
   - Neural Network
   - Random Forest
   - Xgboost
+  - Kmeans
+  - Linear Discriminant Analysis
 
 # Paper size for the document, values of letterpaper and a4paper
 papersize: letter
@@ -194,7 +196,7 @@ ggplot(train_y[(train_y$Number.Volcanoes != "0"),], aes(x = Number.Volcanoes, fi
 ```
 ## III. METHODOLOGY & ANALYSIS
 
-As the project data is image data, preprocessing was not neccessary to fit model. For the prediction of whether there is volcanoe or not, we constructed simple prediction models and advanced models, as discussed as following. For evaluation metric for these models, as references has indicated that uncertainty exists in the identification of volcanoes in the images. We used AUC (Area under the ROC, receiver operating characteristic) and F1 score. As AUC and F1 score provides overall performance measure of classifcation, it incorportates the uncertainty of the predictions.  For the prediction of how many volcanoes there is, root mean square error (RMSE) was used logistic, lasso, and xgboost and AUC was used for neural network. Models used for each kind of prediction are summarized as the following table.
+As the project data is image data, preprocessing was not neccessary to fit model. For the prediction of whether there is volcanoe or not, we constructed simple prediction models and advanced models, as discussed as following. For evaluation metric for these models, as references has indicated that uncertainty exists in the identification of volcanoes in the images. We used AUC (Area under the ROC, receiver operating characteristic) and F1 score. As AUC and F1 score provides overall performance measure of classifcation, it incorportates the uncertainty of the predictions.  For the prediction of how many volcanoes there is, root mean square error (RMSE) was used logistic, lasso, and xgboost and AUC was used for neural network. Models used for the two kinds of prediction are summarized as the following table.
 
 \begin{center}
 \begin{tabular}{cccll}
@@ -213,14 +215,31 @@ As the project data is image data, preprocessing was not neccessary to fit model
 \cline{1-3}
 \multicolumn{1}{|c|}{\textbf{Logistic (Lasso Selection)}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{V} \\ 
 \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Linear Discriminant Analysis}} & \multicolumn{1}{c|}{V} & \multicolumn{1}{c|}{ } \\ 
+\cline{1-3}
 \end{tabular}
 \end{center}
 
+Prior to using supervised learning methods, we applied kmeans clustering to the train dataset to see whether the pixels could accurately cluster the training dataset into 2 clusters. We used `kmeans` function with 2 centers and 20 random sets. The confusion matrix of the clusering result are as following, it can be seen that by simply clustering the pixels, it is difficult to cluster the observations into 2 groups.  
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{Cluster / Label} & \multicolumn{1}{c|}{\textbf{0}} & \multicolumn{1}{c|}{\textbf{1}} \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{1}}  & \multicolumn{1}{c|}{5810}        & \multicolumn{1}{c|}{999}           \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{2}} & \multicolumn{1}{c|}{190}          & \multicolumn{1}{c|}{1}          \\ \cline{1-3}
+\end{tabular}
+\end{center}
+
+### Linear Dicriminant Analysis (LDA) and Quadratic Discriminant Analysis (QDA)
+
+Linear Dicriminant Analysis was applied by using `MASS` package. Prediction using LDA analysis produced adequate results, however, it output warning of 'variables are collinear'. Implementing QDA analysis produced error of 'some group is too small for qda'. The warning and error produced may be that our parameter (pixel) number is too large. Therefore to solve this problem, we try to use other algorithms to fit the dataset.  
+
 ### Lasso Regression  
 
-To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
+Lasso regression was applied as it can perform variable selection, which is suitable in the project situation : having more parameters than observations. To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
 
-We ran two Lasso Regressions. One for classification: whether there is a volcano or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy, for our following analysis.
+We ran two Lasso Regressions. One for classification: whether there is a volcanoe or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy.
 
 ### Logistic Regression
 
@@ -230,7 +249,7 @@ Two Logistic Regressions were applied for classification and Poisson prediction.
 
 Convolutional neural networks (CNNs) have been applied widely in image and video recognition and classification. CNNs are made up of neurons with learnable weights and bias. Therefore, CNNs were used in the project for seeking better classfication results. Some pooling layers were added into the models to progressively reduce the spatial size and the amount of parameters and computation in the network. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network models yielded efficient and satisfying classification results. The loss function is relatively low, indicating the models are good.
 
-Two neural network models were run in this project. **Figure 12** shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. **Figure 13** shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
+Two neural network models were run in this project. **Figure 11** shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. **Figure 12** shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
 
 ```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify whether an image contains volcanoes", fig.pos='H'}
 knitr::include_graphics("neural_network.png")
@@ -267,7 +286,7 @@ F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NU
 ```
 
 ### Random Forest  
-Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in **Figure 11**. The yellow represents the important ones while black means those pixels are less meaningful for our prediction.
+Random Forest was implemented using the `randomForest` package. Originally, n.tree was set to 200 and all other parameters were set as default. However, due to our large parameter and observation number, this took over than 10 hours to run. As it took too much time, it was terminated before it finished running. The final model used in this project was by setting n.tree to 200, mtry to 80 and nodesize to 70. Variable importance were recorded to compare with variable selection in other methods. Variable importance from random forest are shown in **Figure 13**. The yellow represents the important ones while black means those pixels are less meaningful for our prediction.
 
 ```{r echo=FALSE, out.width="250px", fig.cap="The Random Forest variable importance heatmap", fig.pos='H'}
 knitr::include_graphics("rf_heatmap.png")
@@ -292,7 +311,7 @@ To apply Marginal Screening, we use for loop to model each pixels with outcome b
 
 We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
 
-By looking at the pixels' index, **figure 14** and **figure 16**, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in **figure 15** and **figure 17**. 
+By looking at the pixels' index, **figure 14** and **figure 16**, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in **figure 15** and **figure 17**. Comparing these variable selection results to the variable importance in random forest, it is noted that trend of selected variables in Lasso corresponds to the variable importance in random forest.
 
 By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
 
@@ -319,11 +338,16 @@ Overall, we could conclude the variable selection criteria for this project is h
 
 ## IV. CONCLUSION & DISCUSSION  
 
+
 Our model prediction results are summarized in table below. 
 
-Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers.  
+Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers and pools layers.  
+
+It should be noted that, althought the prediction result of Lasso and Logistic regression are not as good as the advanced algorithms, the took significantly less running time. If to take into account of running time, these two models are still good choices. 
 
 The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
+
+In addition, dimension reduction methods such as single value decomposition was not performed. As image data may include several noises, performing dimension reduction may have improvment in the prediction. As the dataset in this project was quite large, simply using `svd` function to perform dimension reduction may take a lot of time. For future improvement of this project, we could try faster packages to perform partial singular value decompositions and perform predicton. 
 
 \begin{center}
 Table 1: Test dataset prediction result on whether there is volcanoe or not
@@ -345,6 +369,8 @@ Table 1: Test dataset prediction result on whether there is volcanoe or not
 \multicolumn{1}{|c|}{\textbf{Logistic (Marginal Screening)}} & \multicolumn{1}{c|}{0.8429} & \multicolumn{1}{c|}{0.9386} \\ 
 \cline{1-3}
 \multicolumn{1}{|c|}{\textbf{Logistic (Lasso Selection)}} & \multicolumn{1}{c|}{0.8672} & \multicolumn{1}{c|}{0.9527} \\ 
+\cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Linear Discriminant Analysis}} & \multicolumn{1}{c|}{0.8893} & \multicolumn{1}{c|}{0.9381} \\ 
 \cline{1-3}
 \end{tabular}
 \end{center}
