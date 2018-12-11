@@ -335,19 +335,8 @@ Hence, for classification, lasso' more spread pixels made more sense because Mar
 
 Overall, we could conclude the variable selection criteria for this project is how much information the index can tell us without overfitting model.
 
-
-## IV. CONCLUSION & DISCUSSION  
-
-
 Our model prediction results are summarized in table below. 
 
-Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers and pools layers.  
-
-It should be noted that, althought the prediction result of Lasso and Logistic regression are not as good as the advanced algorithms, the took significantly less running time. If to take into account of running time, these two models are still good choices. 
-
-The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
-
-In addition, dimension reduction methods such as single value decomposition was not performed. As image data may include several noises, performing dimension reduction may have improvment in the prediction. As the dataset in this project was quite large, simply using `svd` function to perform dimension reduction may take a lot of time. For future improvement of this project, we could try faster packages to perform partial singular value decompositions and perform predicton. 
 
 \begin{center}
 Table 1: Test dataset prediction result on whether there is volcanoe or not
@@ -430,6 +419,18 @@ Table 4: Classification results using neural network for identifying the number 
 
 \end{tabular}
 \end{center}
+
+
+## IV. CONCLUSION & DISCUSSION  
+
+
+Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers and pools layers.  
+
+It should be noted that, althought the prediction result of Lasso and Logistic regression are not as good as the advanced algorithms, the took significantly less running time. If to take into account of running time, these two models are still good choices. 
+
+The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
+
+In addition, dimension reduction methods such as single value decomposition was not performed. As image data may include several noises, performing dimension reduction may have improvment in the prediction. As the dataset in this project was quite large, simply using `svd` function to perform dimension reduction may take a lot of time. For future improvement of this project, we could try faster packages to perform partial singular value decompositions and perform predicton. 
 
 
 \newpage
