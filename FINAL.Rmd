@@ -221,7 +221,7 @@ As the project data is image data, preprocessing was not neccessary to fit model
 \end{center}
 
 
-**A. Classification for if there is any volcano:**
+## A. Classification for if there is any volcano
 
 Prior to using supervised learning methods, we applied kmeans clustering to the train dataset to see whether the pixels could accurately cluster the training dataset into 2 clusters. We used `kmeans` function with 2 centers and 20 random sets. The confusion matrix of the clusering result are as following, it can be seen that by simply clustering the pixels, it is difficult to cluster the observations into 2 groups.  
 
@@ -303,7 +303,7 @@ Table 1: Test dataset prediction result on whether there is volcanoe or not
 \end{center}
 
 
-**B. Poisson Prediction for how many volcanoes are there:**
+## B. Poisson Prediction for how many volcanoes are there
 
 ### Lasso Regression:
 
@@ -408,7 +408,7 @@ Table 4: Classification results using neural network for identifying the number 
 \end{center}
 
 
-### Variable selection methods
+## c. Variable selection methods
 
 #### Shrinking method (Lasso)
 
@@ -426,7 +426,7 @@ By looking at the pixels' index, **figure 14** and **figure 16**, we found that 
 
 By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
 
-```{r echo= TRUE, out.width="250px", fig.cap="The Marginal Screening index for classification", fig.pos='H'}
+```{r echo= FALSE, out.width="250px", fig.cap="The Marginal Screening index for classification", fig.pos='H'}
 knitr::include_graphics("M_C.png")
 ```
 ```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for classification", fig.pos='H'}
