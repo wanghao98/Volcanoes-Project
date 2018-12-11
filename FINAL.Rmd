@@ -15,7 +15,7 @@ address:
 
 # Abstract
 abstract: |
-  LASSO Regression, logistic regression, neural network, random forest, and xgboost have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not, and if there is any, how many volcanoes are there. The analysis of the images revealed that there are several volcanoes on Venus. Neural network has the best performance to identify whether the images have volcanoes in this project for image classification with an area under the curve 0.9629 and a high F-1 score 0.9747. The comparison between models is also included.
+  LASSO Regression, logistic regression, neural network, random forest, and xgboost have been used in this project to identify whether each image in the Kaggle datasets contains volcanoes or not, and if there is any, how many volcanoes are there. The analysis of the images revealed that there are several volcanoes on Venus. Neural network xgboost both had good performance to identify whether the images have volcanoes in this project for image classification with an area under the curve of 0.9629 (neural network) and 0.9680 (xgboost), and F-1 score of 0.9747 (neural network) and 0.9628 (xgboost). The comparison between different models is also included.
 
 # Optional: One or more keywords
 keywords:
@@ -220,6 +220,9 @@ As the project data is image data, preprocessing was not neccessary to fit model
 \end{tabular}
 \end{center}
 
+
+## A. Classification for if there is any volcano
+
 Prior to using supervised learning methods, we applied kmeans clustering to the train dataset to see whether the pixels could accurately cluster the training dataset into 2 clusters. We used `kmeans` function with 2 centers and 20 random sets. The confusion matrix of the clusering result are as following, it can be seen that by simply clustering the pixels, it is difficult to cluster the observations into 2 groups.  
 
 \begin{center}
@@ -237,19 +240,17 @@ Linear Dicriminant Analysis was applied by using `MASS` package. Prediction usin
 
 ### Lasso Regression  
 
-Lasso regression was applied as it can perform variable selection, which is suitable in the project situation : having more parameters than observations. To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter.  
-
-We ran two Lasso Regressions. One for classification: whether there is a volcanoe or not; one for Poisson distribution: how many volcanoes are there. By using the cross-validation error data, we identified two intervals, (-6.5, -5) and (-5, -4.5). Because of the different interval, we have different selected variable numbers: 470 and 114. The prediction using those pixels yielded a good start, a high prediction accuracy.
+Lasso regression was applied as it can perform variable selection, which is suitable in the project situation : having more parameters than observations. To apply Lasso Regression,`glmnet` package was implemented. We first selected reasonable interval for tuning parameter $\lambda$ by examing cross-validation error. After that, we did the model selection by using glmnet and use the "lambda.min" as final tuning parameter. By using the cross-validation error data, we identified the interval, (-6.5, -5) selected 470 important pixels. The prediction using those pixels yielded a good start, a high prediction accuracy.
 
 ### Logistic Regression
 
-Two Logistic Regressions were applied for classification and Poisson prediction. Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 and 250 pixels were selected by using Marginal Screening, respectively; 470 and 114 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 4 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and RMSE for Poisson prediction.  
+Before performing logistic regression, we used two variable selection methods to reduce dimension. 400 pixels were selected by using Marginal Screening and 470 pixels were selected by using above Lasso Regression. Then, we applyed logistic regressions on those 2 sets of selected pixels repectively. We then recorded their F1 score and AUC for classification, and they showed that Lasso selected pixels performed better than Marginal Screening method.  
 
 ### Neural Network  
 
 Convolutional neural networks (CNNs) have been applied widely in image and video recognition and classification. CNNs are made up of neurons with learnable weights and bias. Therefore, CNNs were used in the project for seeking better classfication results. Some pooling layers were added into the models to progressively reduce the spatial size and the amount of parameters and computation in the network. The raw data *train_images* and *test_images* was converted into numeric variables and reshaped into 3D array with dimension 7000 $\times$ 110 $\times$ 110 and 2734 $\times$ 110 $\times$ 110 respectively. The pixels were shrinked from 0-255 to 0-1 by dividing each pixel by 255. The target label (Volcano?) was converted into categorical variable for classification. The neural network models yielded efficient and satisfying classification results. The loss function is relatively low, indicating the models are good.
 
-Two neural network models were run in this project. **Figure 11** shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. **Figure 12** shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
+**Figure 11** shows the result of the first neural network model which is designed to classify whether an image contains a volcano. The model used 20% of the training data as validation data. 
 
 ```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify whether an image contains volcanoes", fig.pos='H'}
 knitr::include_graphics("neural_network.png")
@@ -259,30 +260,6 @@ The loss function and accuracy:
 ```{r echo=FALSE}
 load("neural_network.RData")
 acc_loss
-```
-
-```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify how many volcanoes in each image", fig.pos='H'}
-knitr::include_graphics("neural_network_number.png")
-```
-
-The loss function and accuracy:
-```{r echo=FALSE}
-load("neural_network_number.RData")
-acc_loss_number
-```
-
-```{r eval=FALSE, include=FALSE}
-library(MLmetrics)
-library(pROC)
-table(pred_results_class, test_y$Volcano.)
-F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
-auc(test_y[,1], pred_results[,2])
-plot(auc(test_y[,1], pred_results[,2]))
-ROC_nn <- roc(test_y[,1], pred_results[,2])
-plot(ROC_nn)
-
-table(pred_results_number_class, test_y$Number.Volcanoes)
-F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NULL)
 ```
 
 ### Random Forest  
@@ -296,46 +273,7 @@ knitr::include_graphics("rf_heatmap.png")
 
 As xgboost is nowadays a popular algorithm used in machine learning and Kaggle competitions, this algorithm was also used in this project to see its performance. Xgboost was implemented using the `xgboost` package. Tuning was performed by using `xgb.cv` function with nfold = 5, parameters that were tuned are eta (learning rate), max_depth (maximum depth of a tree), min_child_weight (minimum sum of instance weight needed in a child), subsample (subsample ratio of the training instance), colsample_bytree (subsample ratio of columns when constructing each tree). The tuning process took over 12 hours and was terminated before it finished all the combinations. The parameter combination with the lowest error was used. From the tuning process, parameterts used for this model are set as following: eta = 0.1,  max_depth = 5,  min_child_weight =5,  subsample = 0.65, colsample_bytree = 0.8, nrounds = 200,  objective = 'binary:logistic'. To model how many volcanoes there are, objective = 'count:possion' was used with same parameters as before.
 
-
-### Variable selection methods
-
-#### Shrinking method (Lasso)
-
-By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important ones left. With the tuning parameter $\lambda$'s interval we selected by examing the cross validation result, we selected 470 important pixels for classification, 250 pixels for Poisson prediction, and apply those to lasso and logistic regression respectively.
-
-#### Marginal Screening
-
-To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels for classification and 250 for poisson prediction. The reason why we select top 400 and 250 pixels is that, after trying different number of top pixels, we found 400 pixels gave us highest prediction accuracy. 
-
-#### Variable selection methods comparison
-
-We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
-
-By looking at the pixels' index, **figure 14** and **figure 16**, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in **figure 15** and **figure 17**. Comparing these variable selection results to the variable importance in random forest, it is noted that trend of selected variables in Lasso corresponds to the variable importance in random forest.
-
-By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
-
-```{r echo=FALSE, out.width="250px", fig.cap="The Marginal Screening index for classification", fig.pos='H'}
-knitr::include_graphics("M_C.png")
-```
-```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for classification", fig.pos='H'}
-knitr::include_graphics("Lasso_C.png")
-```
-```{r echo=FALSE, out.width="250px", fig.cap="The Marginal Screening index for Poisson prediction", fig.pos='H'}
-knitr::include_graphics("M_p.png")
-```
-```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for Poisson prediction", fig.pos='H'}
-knitr::include_graphics("lasso_P.png")
-```
-```{r echo=FALSE, out.width="250px", fig.cap="Variable Importance in Random Forest", fig.pos='H'}
-knitr::include_graphics("rfimport.png")
-```
-
-Hence, for classification, lasso' more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
-
-Overall, we could conclude the variable selection criteria for this project is how much information the index can tell us without overfitting model.
-
-Our model prediction results are summarized in table below. 
+Our model prediction results for classfication are summarized in table below. 
 
 
 \begin{center}
@@ -365,8 +303,83 @@ Table 1: Test dataset prediction result on whether there is volcanoe or not
 \end{center}
 
 
+Xgboost and neural network both had good evaluation performance, their confusion matrix are as below:  
+
 \begin{center}
-Table 2: Test dataset prediction result on how many volcanoes there are in the images
+Table 2: Classification results using neural network for identifying volcanoes in the images
+\end{center}
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{}             & \multicolumn{1}{c|}{\textbf{No}} & \multicolumn{1}{c|}{\textbf{Yes}} \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{No}}  & \multicolumn{1}{c|}{2270}        & \multicolumn{1}{c|}{88}           \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{30}          & \multicolumn{1}{c|}{346}          \\ \cline{1-3}
+\end{tabular}
+\end{center}
+
+\begin{center}
+Table 3: Classification results using xgoost for identifying volcanoes in the images
+\end{center}
+
+\begin{center}
+\begin{tabular}{cccll}
+\cline{1-3}
+\multicolumn{1}{|c|}{}             & \multicolumn{1}{c|}{\textbf{No}} & \multicolumn{1}{c|}{\textbf{Yes}} \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{No}}  & \multicolumn{1}{c|}{2280}        & \multicolumn{1}{c|}{156}           \\ \cline{1-3}
+\multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{20}          & \multicolumn{1}{c|}{278}          \\ \cline{1-3}
+\end{tabular}
+\end{center}
+
+## B. Poisson Prediction for how many volcanoes are there
+
+### Lasso Regression:
+
+For predicting the count of volcanoes, we also performed Lasso regression but changed the `family` to "poisson", which allows us to predict the count instead binary outcome. Similarly, we used cross-validation error to find the reasonable interval for lambda, (-5.5,-4) and used the lambda.min to predict. This approach gave us 114 important variables and RMSE 0.4216523.
+
+### Logistic Regression:
+
+As we did in classification section, we used both Marginal Screenign and Lasso to select important pixels. In this case, Marginal Screening gave us 250 important pixels based on best prediction accuracy and RMSE 0.5072927; Lasso selected 114 pixels gave us RMSE 0.6798163.
+
+### Xgboost:
+
+In performing prediction with xgboost, the tuning parameters were directly adopted from the xgboost model in the previous section.  
+
+### Neural network:
+
+We implemented similar algorithm for Nerual network as in the previous section.
+
+**Figure 12** shows the result of the second neural network model which is designed to classify whether an image contains at least one volcano. The model, similar to the first one, used 20% of the training data as validation data. 
+
+```{r echo=FALSE, out.width="250px", fig.cap="Neural Network to classify how many volcanoes in each image", fig.pos='H'}
+knitr::include_graphics("neural_network_number.png")
+```
+
+The loss function and accuracy:
+```{r echo=FALSE}
+load("neural_network_number.RData")
+acc_loss_number
+```
+
+```{r eval=FALSE, include=FALSE}
+library(MLmetrics)
+library(pROC)
+table(pred_results_class, test_y$Volcano.)
+F1_Score(y_true = test_y[,1], y_pred = pred_results_class, positive = NULL)
+auc(test_y[,1], pred_results[,2])
+plot(auc(test_y[,1], pred_results[,2]))
+ROC_nn <- roc(test_y[,1], pred_results[,2])
+plot(ROC_nn)
+
+table(pred_results_number_class, test_y$Number.Volcanoes)
+F1_Score(y_true = test_y[, 4], y_pred = pred_results_number_class, positive = NULL)
+```
+
+
+Our model prediction results for Poisson count prediction are summarized in table below. It can be seen that xgboost model has the lowest RMSE. As the neural network was a classification model, RMSE was not calculated. Instead, its confusion matrix are shown belwo.
+
+\begin{center}
+Table 4: Test dataset prediction result on how many volcanoes there are in the images
 \end{center}
 
 \begin{center}
@@ -383,26 +396,8 @@ Table 2: Test dataset prediction result on how many volcanoes there are in the i
 \end{tabular}
 \end{center}
 
-
-Neural Network
-
-Since neural network models yielded the best results, we have concluded the classification table down below. 
-
 \begin{center}
-Table 3: Classification results using neural network for identifying volcanoes in the images
-\end{center}
-
-\begin{center}
-\begin{tabular}{cccll}
-\cline{1-3}
-\multicolumn{1}{|c|}{}             & \multicolumn{1}{c|}{\textbf{No}} & \multicolumn{1}{c|}{\textbf{Yes}} \\ \cline{1-3}
-\multicolumn{1}{|c|}{\textbf{No}}  & \multicolumn{1}{c|}{2270}        & \multicolumn{1}{c|}{88}           \\ \cline{1-3}
-\multicolumn{1}{|c|}{\textbf{Yes}} & \multicolumn{1}{c|}{30}          & \multicolumn{1}{c|}{346}          \\ \cline{1-3}
-\end{tabular}
-\end{center}
-
-\begin{center}
-Table 4: Classification results using neural network for identifying the number of volcanoes in the images
+Table 5: Classification results using neural network for identifying the number of volcanoes in the images
 \end{center}
 
 \begin{center}
@@ -421,22 +416,70 @@ Table 4: Classification results using neural network for identifying the number 
 \end{center}
 
 
+## c. Variable selection methods
+
+#### Shrinking method (Lasso)
+
+By applying Lasso Regression, we were able to shrink highly correlated pixels to 0 and only had important ones left. With the tuning parameter $\lambda$'s interval we selected by examing the cross validation result, we selected 470 important pixels for classification, 250 pixels for Poisson prediction, and apply those to lasso and logistic regression respectively.
+
+#### Marginal Screening
+
+To apply Marginal Screening, we use for loop to model each pixels with outcome by using glm function, logistic regression. After sorting the p values from smallest to largest, we selected the top 400 pixels for classification and 250 for poisson prediction. The reason why we select top 400 and 250 pixels is that, after trying different number of top pixels, we found 400 pixels gave us highest prediction accuracy. 
+
+#### Variable selection methods comparison
+
+We originally only applied Marginal Screening to logistic regression. But after realizing Lasso helped us selected variables as well, we tried both methods on logistic regression.
+
+By looking at the pixels' index, **figure 14** and **figure 16**, we found that the pixels selected by Marginal Screening focused between 4000-7000 for classification and between 5200 - 7000 for poisson prediction, which corresponds to the center of pictures; while pixels selected by lasso regression were more spread, as shown in **figure 15** and **figure 17**. Comparing these variable selection results to the variable importance in random forest, it is noted that trend of selected variables in Lasso corresponds to the variable importance in random forest.
+
+By applying those two different selection methods, we found the accuracy of Lasso selection is higher for classification; while for Poisson prediction, Marginal Screening selection performs better.
+
+```{r echo= FALSE, out.width="250px", fig.cap="The Marginal Screening index for classification", fig.pos='H'}
+knitr::include_graphics("M_C.png")
+```
+```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for classification", fig.pos='H'}
+knitr::include_graphics("Lasso_C.png")
+```
+```{r echo=FALSE, out.width="250px", fig.cap="The Marginal Screening index for Poisson prediction", fig.pos='H'}
+knitr::include_graphics("M_p.png")
+```
+```{r echo=FALSE, out.width="250px", fig.cap="The Lasso index for Poisson prediction", fig.pos='H'}
+knitr::include_graphics("lasso_P.png")
+```
+```{r echo=FALSE, out.width="250px", fig.cap="Variable Importance in Random Forest", fig.pos='H'}
+knitr::include_graphics("rfimport.png")
+```
+
+Hence, for classification, lasso's variable selection with more spread pixels made more sense because Marginal Screening's centered selection might ignore some important pixels at the edges. For Poisson prediction, we prefer the Marginal Screening since the smaller number of pixels selected by Lasso regression would omit some important information.
+
+Overall, we could conclude the variable selection criteria for this project is how much information the index can tell us without overfitting model.  
+
 ## IV. CONCLUSION & DISCUSSION  
 
+Machine learning methods have long been popular in aiming at establishing models to faciliate humans in retreiving information from large datasets. One of the discussion topics in the venus image data, obtained through NASA's Magellan spacecraft, is identifying whether there are volcanoes or not, how many there are, and the confidence people have in identifying they are volcanoes. For our project, we aim in establishing prediction models in predicting the existance of volcanoe in image data as well as establishing prediction models in predicting how many volcanoes there are. As the daataset is rather unbalanced, with 84% of our image data having no volcanoes, we use the evaluation metric of AUC and F1 score as our prediction metric.
 
-Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network works best as it includes different hidden layers and pools layers.  
+The analysis of our project shows for the topic of "predicting whether there is volcanoe or not", our models show prediction results using AUC ranged from 0.8429 to 0.9680, using F1 score ranged from 0.9381 to 0.9747. When considering the best model chosen by either AUC or F1 score, it results in different models. For AUC, the best model is xgboost with AUC of 0.9680, whereas for F1 score the best model is neural network with F1 score of 0.9747. When comparing the confusion matrix of these two models, we notice that there are less false positive in xgboost where as there are less false negative in neural network.
+
+On the topic of "predicting how many volcanoes there are", our models show prediction results using RMSE ranged from 0.0613 to 0.5073. However the tuning parameterts of these prediction models were directly adopted from the model in the first prediction topic ("predicting whether there is volcanoe or not"). Lasso and logistic model performed poor results, compared to xgboost. As venus image data are unstructered and have noise, it is possible that prediction results would improve in these two models if dimension reduction techniques were applied. In future improvement, re-tuning these parameters would have improvement in predicting how many volcanoes there are.
+
+Compared to structured data, the images used in this project are unstructured as volcanoes can occur in any pixels, this makes featuring difficult without performing principle component analysis. Models such as lasso, logistic, random forest, require more of predefined features. In this project, convolution neural network fits well in this kind of dataset as it considers local region of the datset.  
 
 It should be noted that, althought the prediction result of Lasso and Logistic regression are not as good as the advanced algorithms, the took significantly less running time. If to take into account of running time, these two models are still good choices. 
 
 The limit of the models in this project is that, due to large parameter and sample size. Tuning advanced models such as random forest, xgboost, and neural network takes a lot of time. The tuning done in this project could be more fined tuned in the future. When predicting the number of volcanoes, parameters in xgboost and neural network were directly used from the previous model, therefore these models could also be further tuned in the future. 
 
-In addition, dimension reduction methods such as single value decomposition was not performed. As image data may include several noises, performing dimension reduction may have improvment in the prediction. As the dataset in this project was quite large, simply using `svd` function to perform dimension reduction may take a lot of time. For future improvement of this project, we could try faster packages to perform partial singular value decompositions and perform predicton. 
+In addition, dimension reduction methods such as single value decomposition was not performed. As image data are unstructered and image data of venus may include several noises, performing dimension reduction may have improvment in the prediction. As the dataset in this project was quite large, we were not able to use `svd` function to perform dimension reduction. For future improvement of this project, we could try faster packages such as `irlba` package to perform partial singular value decompositions and see if there is improvement in our model. 
 
+## V. REFERENCES
+
+Burl, M.C., Asker, L., Smyth, P. et al. Learning to Recognize Volcanoes on Venus. Machine Learning (1998) 30: 165. https://doi.org/10.1023/A:1007400206189  
+
+Kumar, A., Finding Volcanoes On Venus. https://www.kaggle.com/amantheroot/finding-volcanoes-on-venus  
+
+King, H., Volcanoes on Venus.  https://geology.com/stories/13/venus-volcanoes/
 
 \newpage
-
-\newpage
-## V. APPENDIX
+## VI. APPENDIX
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
 library(knitr)
 def.chunk.hook  <- knitr::knit_hooks$get("chunk")
