@@ -1,4 +1,4 @@
-# Volcanoes-Project
+# Detecting Volcanoes on Venus
 By Di Ye, Hao Wang, and Hannah Pu  
 * Final Project Rmd File (proj-final-report.rmd)
 * Final Project pdf File (proj-final-report.pdf)
