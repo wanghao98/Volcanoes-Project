@@ -1,3 +1,8 @@
-# Volcanoes-Project
+# STAT 432 FINAL PROJECT Volcanoes-Project
+Team: MAMAMIA!
 By Di Ye, Hao Wang, and Hannah Pu  
-Containing a project proposal and final report
+-------------------------
+
+* Final Project Rmd File
+* Final Project pdf File
+* Cleaned R Data link: https://goo.gl/J6AAqp
